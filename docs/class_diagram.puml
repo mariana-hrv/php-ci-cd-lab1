@@ -1,0 +1,217 @@
+@startuml
+left to right direction
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+hide empty members
+
+title UML-діаграма класів: система продажу нерухомості
+
+package "Моделі (Eloquent Models)" {
+  class User <<Model>> {
+    +id: int
+    +name: String
+    +email: String
+    +passwordHash: String
+    +role: String
+    +createdAt: DateTime
+    --
+    +register(data: Array): bool
+    +updateProfile(data: Array): bool
+    +checkPassword(password: String): bool
+    +hasRole(role: String): bool
+    +getNotifications(): Array
+  }
+
+  class Property <<Model>> {
+    +id: int
+    +propertyType: String
+    +city: String
+    +address: String
+    +area: float
+    +rooms: int
+    --
+    +getDetails(): Array
+    +updateDetails(data: Array): bool
+    +getPhotos(): Array
+    +getListings(): Array
+    +isResidential(): bool
+  }
+
+  class Listing <<Model>> {
+    +id: int
+    +propertyId: int
+    +sellerId: int
+    +price: decimal
+    +description: String
+    +status: String
+    +createdAt: DateTime
+    --
+    +publish(): bool
+    +updatePrice(price: decimal): bool
+    +changeStatus(status: String): bool
+    +getProperty(): Property
+    +getRequests(): Array
+  }
+
+  class PropertyPhoto <<Model>> {
+    +id: int
+    +propertyId: int
+    +filePath: String
+    +isPrimary: bool
+    +createdAt: DateTime
+    --
+    +upload(file: File): bool
+    +deletePhoto(): bool
+    +setPrimary(): bool
+    +getUrl(): String
+    +validateFormat(file: File): bool
+  }
+
+  class Favorite <<Model>> {
+    +id: int
+    +userId: int
+    +listingId: int
+    +note: String
+    +createdAt: DateTime
+    --
+    +add(): bool
+    +remove(): bool
+    +updateNote(note: String): bool
+    +getListing(): Listing
+    +existsFor(userId: int, listingId: int): bool
+  }
+
+  class ViewingRequest <<Model>> {
+    +id: int
+    +buyerId: int
+    +listingId: int
+    +preferredDate: Date
+    +preferredTime: Time
+    +status: String
+    +comment: String
+    --
+    +submit(): bool
+    +confirm(): bool
+    +reject(reason: String): bool
+    +cancel(): bool
+    +changeTime(date: Date, time: Time): bool
+  }
+
+  class Notification <<Model>> {
+    +id: int
+    +userId: int
+    +message: String
+    +type: String
+    +isRead: bool
+    +createdAt: DateTime
+    --
+    +send(): bool
+    +markAsRead(): bool
+    +markAsUnread(): bool
+    +getRecipient(): User
+    +getText(): String
+  }
+
+  class ModerationRecord <<Model>> {
+    +id: int
+    +listingId: int
+    +adminId: int
+    +decision: String
+    +comment: String
+    +createdAt: DateTime
+    --
+    +approve(): bool
+    +reject(reason: String): bool
+    +recordDecision(): bool
+    +getListing(): Listing
+    +getModerator(): User
+  }
+}
+
+package "Контролери (MVC)" {
+  abstract class Controller <<BaseController>> {
+    #currentUserId: int
+    #requestId: String
+    #validationErrors: Array
+    #paginationLimit: int
+    #defaultLocale: String
+    --
+    #authorize(user: User, action: String): bool
+    #validateInput(data: Array, rules: Array): bool
+    #respond(data: Array, status: int): Array
+    #redirect(path: String): String
+    #logAction(action: String): void
+  }
+
+  class PropertyController <<Controller>> {
+    -propertyModel: Property
+    -filters: Array
+    -sortField: String
+    -sortDirection: String
+    -perPage: int
+    --
+    +index(filters: Array): Array
+    +show(propertyId: int): Property
+    +search(query: String): Array
+    +filterByCity(city: String): Array
+    +sortBy(field: String): Array
+  }
+
+  class ListingController <<Controller>> {
+    -listingModel: Listing
+    -propertyModel: Property
+    -currentSellerId: int
+    -pageSize: int
+    -allowedStatuses: Array
+    --
+    +index(): Array
+    +store(data: Array): Listing
+    +update(id: int, data: Array): bool
+    +destroy(id: int): bool
+    +changeStatus(id: int, status: String): bool
+  }
+
+  class ViewingRequestController <<Controller>> {
+    -requestModel: ViewingRequest
+    -notificationModel: Notification
+    -currentBuyerId: int
+    -allowedStatuses: Array
+    -pageSize: int
+    --
+    +store(data: Array): ViewingRequest
+    +indexForSeller(sellerId: int): Array
+    +confirm(id: int): bool
+    +reject(id: int, reason: String): bool
+    +cancel(id: int): bool
+  }
+}
+
+' Узагальнення (наслідування)
+PropertyController --|> Controller
+ListingController --|> Controller
+ViewingRequestController --|> Controller
+
+' Композиція: фотографії належать конкретному об'єкту
+Property "1" *-- "0..*" PropertyPhoto : містить
+
+' Агрегація: оголошення використовує об'єкт нерухомості
+Listing "0..*" o-- "1" Property : описує
+
+' Асоціації моделей
+User "1" -- "0..*" Listing : створює
+User "1" -- "0..*" Favorite : зберігає
+User "1" -- "0..*" ViewingRequest : подає
+User "1" -- "0..*" Notification : отримує
+User "1" -- "0..*" ModerationRecord : перевіряє
+Listing "1" -- "0..*" Favorite : у вибраному
+Listing "1" -- "0..*" ViewingRequest : заявки
+Listing "1" -- "0..*" ModerationRecord : модерація
+
+' Залежності контролерів від моделей
+PropertyController ..> Property : використовує
+ListingController ..> Listing : використовує
+ViewingRequestController ..> ViewingRequest : використовує
+ViewingRequestController ..> Notification : сповіщає
+@enduml
