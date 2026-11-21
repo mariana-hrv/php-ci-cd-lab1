@@ -19,6 +19,26 @@ code style validation, and GitHub Secrets integration.
 - Automatic CI checks using GitHub Actions.
 - Secure handling of GitHub Secrets.
 
+## Usage Examples
+
+The Calculator class supports addition and subtraction.
+
+### Addition
+
+```php
+$calculator = new Calculator();
+$result = $calculator->add(2, 3);
+// Expected result: 5
+```
+
+### Subtraction
+
+```php
+$calculator = new Calculator();
+$result = $calculator->subtract(5, 2);
+// Expected result: 3
+```
+
 ## Technologies
 
 - PHP 8.2
