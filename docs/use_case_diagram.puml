@@ -1,0 +1,49 @@
+@startuml
+left to right direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam linetype ortho
+
+title UML-діаграма варіантів використання
+
+actor "Покупець" as Buyer
+actor "Продавець" as Seller
+actor "Адміністратор" as Admin
+
+rectangle "Електронна система продажу нерухомості" {
+  usecase "Пошук нерухомості" as UC_Search
+  usecase "Пошук за містом" as UC_SearchCity
+  usecase "Переглянути оголошення" as UC_View
+  usecase "Додати до вибраного" as UC_Favorite
+  usecase "Подати заявку\nна перегляд" as UC_Request
+
+  usecase "Створити оголошення" as UC_Create
+  usecase "Керувати оголошеннями" as UC_ManageListings
+  usecase "Опрацювати заявки\nна перегляд" as UC_ManageRequests
+
+  usecase "Модерувати оголошення" as UC_Moderate
+  usecase "Керувати користувачами" as UC_ManageUsers
+  usecase "Переглянути статистику" as UC_Stats
+
+  usecase "Перевірити дані заявки" as UC_Validate
+  usecase "Сповістити продавця" as UC_Notify
+}
+
+Buyer --> UC_Search
+Buyer --> UC_View
+Buyer --> UC_Request
+
+Seller --> UC_Create
+Seller --> UC_ManageListings
+Seller --> UC_ManageRequests
+
+Admin --> UC_Moderate
+Admin --> UC_ManageUsers
+Admin --> UC_Stats
+
+UC_SearchCity --|> UC_Search
+UC_Favorite ..> UC_View : <<extend>>
+UC_Request ..> UC_Validate : <<include>>
+UC_Request ..> UC_Notify : <<include>>
+@enduml
