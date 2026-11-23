@@ -4,24 +4,39 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Interfaces\ExportableInterface;
-use App\Traits\JsonExportTrait;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Property extends AbstractEntity implements ExportableInterface
+class Property extends Model
 {
-    use JsonExportTrait;
+    use HasFactory;
 
-    public function __construct(
-        string $id,
-        string $createdAt,
-        private string $address,
-        private float $price
-    ) {
-        parent::__construct($id, $createdAt);
+    protected $fillable = [
+        'property_type',
+        'city',
+        'address',
+        'area',
+        'rooms',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'area' => 'decimal:2',
+            'rooms' => 'integer',
+        ];
     }
 
-    public function getDetails(): string
+    // Один об'єкт нерухомості може мати багато оголошень
+    public function listings(): HasMany
     {
-        return "Нерухомість: {$this->address}, ціна: {$this->price} грн";
+        return $this->hasMany(Listing::class);
+    }
+
+    // Один об'єкт нерухомості може мати багато фотографій
+    public function photos(): HasMany
+    {
+        return $this->hasMany(PropertyPhoto::class);
     }
 }

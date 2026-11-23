@@ -1,50 +1,31 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Models\Property;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class PropertyController extends Controller
 {
-    private array $properties = [
-        [
-            'id' => 1,
-            'propertyType' => 'Квартира',
-            'city' => 'Івано-Франківськ',
-            'address' => 'вул. Незалежності, 10',
-            'area' => 65.5,
-            'rooms' => 2,
-        ],
-        [
-            'id' => 2,
-            'propertyType' => 'Будинок',
-            'city' => 'Львів',
-            'address' => 'вул. Шевченка, 25',
-            'area' => 120.0,
-            'rooms' => 4,
-        ],
-    ];
-
+    // Отримання всіх об'єктів нерухомості
     public function index(): JsonResponse
     {
+        $properties = Property::query()
+            ->with(['listings', 'photos'])
+            ->get();
+
         return response()->json([
             'status' => 'success',
-            'data' => $this->properties,
+            'data' => $properties->map(
+                fn (Property $property): array => $this->formatProperty($property)
+            )->values()->all(),
         ], 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Створення нового об'єкта нерухомості
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -55,66 +36,56 @@ class PropertyController extends Controller
             'rooms' => ['required', 'integer', 'min:1'],
         ]);
 
-        $newProperty = [
-            'id' => max(array_column($this->properties, 'id')) + 1,
-            'propertyType' => $validated['propertyType'],
+        $property = Property::create([
+            'property_type' => $validated['propertyType'],
             'city' => $validated['city'],
             'address' => $validated['address'],
-            'area' => (float) $validated['area'],
-            'rooms' => (int) $validated['rooms'],
-        ];
+            'area' => $validated['area'],
+            'rooms' => $validated['rooms'],
+        ]);
 
-        $this->properties[] = $newProperty;
+        $property->load(['listings', 'photos']);
 
         return response()->json([
             'status' => 'created',
-            'data' => $newProperty,
+            'data' => $this->formatProperty($property),
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    // Отримання об'єкта нерухомості за ID
     public function show(string $id): JsonResponse
     {
-        $propertyId = (int) $id;
+        $property = Property::query()
+            ->with(['listings', 'photos'])
+            ->find((int) $id);
 
-        foreach ($this->properties as $property) {
-            if ($property['id'] === $propertyId) {
-                return response()->json([
-                    'status' => 'success',
-                    'data' => $property,
-                ], 200);
-            }
+        if ($property === null) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Об’єкт нерухомості з таким ID не знайдено.',
+            ], 404);
         }
 
         return response()->json([
-            'status' => 'error',
-            'message' => 'Обʼєкт нерухомості з таким ID не знайдено.',
-        ], 404);
+            'status' => 'success',
+            'data' => $this->formatProperty($property),
+        ], 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    // Формування відповіді у форматі попереднього API
+    private function formatProperty(Property $property): array
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return [
+            'id' => $property->id,
+            'propertyType' => $property->property_type,
+            'city' => $property->city,
+            'address' => $property->address,
+            'area' => (float) $property->area,
+            'rooms' => $property->rooms === null
+                ? null
+                : (int) $property->rooms,
+            'listings' => $property->listings,
+            'photos' => $property->photos,
+        ];
     }
 }

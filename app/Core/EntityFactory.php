@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Core;
 
 use App\Models\AbstractEntity;
+use App\Models\LegacyProperty;
 use App\Models\LegacyUser;
-use App\Models\Property;
 use InvalidArgumentException;
 
 class EntityFactory
@@ -14,7 +14,7 @@ class EntityFactory
     public function createEntity(string $type, array $data): AbstractEntity
     {
         return match ($type) {
-            'property' => new Property(
+            'property' => new LegacyProperty(
                 $data['id'],
                 $data['createdAt'],
                 $data['address'],
