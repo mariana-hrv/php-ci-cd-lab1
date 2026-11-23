@@ -1,9 +1,14 @@
+
 # PHP dependencies
 /vendor/
+
+# JavaScript dependencies
+/node_modules/
 
 # Environment variables
 .env
 .env.*
+!.env.example
 
 # IDE settings
 .vscode/
@@ -13,5 +18,27 @@
 .DS_Store
 Thumbs.db
 
-# Logs
+# Logs and test cache
 *.log
+.phpunit.result.cache
+
+# Laravel runtime files
+/bootstrap/cache/*.php
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*
+/storage/logs/*
+/storage/app/private/*
+/storage/app/public/*
+
+# Local database
+/database/*.sqlite
+/database/*.sqlite-*
+
+# Frontend build
+/public/build/
+/public/hot
+
+/AGENTS.md
+/CLAUDE.md
