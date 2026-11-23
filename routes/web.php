@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\FavoriteListingController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\PropertySearchController;
 use Illuminate\Support\Facades\Route;
@@ -39,4 +40,23 @@ Route::prefix('properties')->name('properties.')->group(function () {
     Route::get('/{id}', [PropertyController::class, 'show'])
         ->whereNumber('id')
         ->name('show');
-});
+}); // Закінчення групи properties
+
+// Маршрути для роботи з вибраними оголошеннями
+Route::middleware('auth')
+    ->prefix('favorites')
+    ->name('favorites.')
+    ->group(function () {
+
+        // Отримання вибраних оголошень користувача
+        Route::get('/', [
+            FavoriteListingController::class,
+            'index',
+        ])->name('index');
+
+        // Синхронізація вибраних оголошень
+        Route::put('/', [
+            FavoriteListingController::class,
+            'sync',
+        ])->name('sync');
+    });

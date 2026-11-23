@@ -17,10 +17,15 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: "8.4"
-          extensions: mbstring, fileinfo, openssl, pdo_sqlite
+          extensions: mbstring, fileinfo, openssl, pdo_sqlite, sqlite3
 
       - name: Copy .env file
         run: cp .env.example .env
+
+      - name: Prepare SQLite database
+        run: |
+          mkdir -p database
+          touch database/database.sqlite
 
       - name: Install Dependencies
         run: composer install -q --no-ansi --no-interaction --no-progress --prefer-dist

@@ -4,56 +4,63 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\Property;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class PropertySearchController extends Controller
 {
-    private array $properties = [
-        [
-            'id' => 1,
-            'propertyType' => 'Квартира',
-            'city' => 'Івано-Франківськ',
-            'address' => 'вул. Незалежності, 10',
-            'area' => 65.5,
-            'rooms' => 2,
-        ],
-        [
-            'id' => 2,
-            'propertyType' => 'Будинок',
-            'city' => 'Львів',
-            'address' => 'вул. Шевченка, 25',
-            'area' => 120.0,
-            'rooms' => 4,
-        ],
-    ];
-
     public function search(Request $request): JsonResponse
     {
+        // Валідація параметрів пошуку
         $filters = $request->validate([
             'city' => ['nullable', 'string', 'max:100'],
             'propertyType' => ['nullable', 'string', 'max:100'],
             'rooms' => ['nullable', 'integer', 'min:1'],
         ]);
 
-        $city = $filters['city'] ?? null;
-        $propertyType = $filters['propertyType'] ?? null;
-        $rooms = isset($filters['rooms'])
-            ? (int) $filters['rooms']
-            : null;
+        // Формування запиту до бази даних
+        $query = Property::query()
+            ->with(['listings', 'photos']);
 
-        $results = array_filter(
-            $this->properties,
-            function (array $property) use ($city, $propertyType, $rooms): bool {
-                return ($city === null || $property['city'] === $city)
-                    && ($propertyType === null || $property['propertyType'] === $propertyType)
-                    && ($rooms === null || $property['rooms'] === $rooms);
-            }
-        );
+        // Фільтрація за містом
+        if (! empty($filters['city'])) {
+            $query->where('city', $filters['city']);
+        }
+
+        // Фільтрація за типом нерухомості
+        if (! empty($filters['propertyType'])) {
+            $query->where(
+                'property_type',
+                $filters['propertyType']
+            );
+        }
+
+        // Фільтрація за кількістю кімнат
+        if (isset($filters['rooms'])) {
+            $query->where('rooms', $filters['rooms']);
+        }
+
+        // Отримання результатів із SQLite
+        $properties = $query->orderBy('id')->get();
+
+        // Формування JSON-відповіді
+        $results = $properties->map(function (Property $property) {
+            return [
+                'id' => $property->id,
+                'propertyType' => $property->property_type,
+                'city' => $property->city,
+                'address' => $property->address,
+                'area' => (float) $property->area,
+                'rooms' => $property->rooms,
+                'listings' => $property->listings,
+                'photos' => $property->photos,
+            ];
+        });
 
         return response()->json([
             'status' => 'success',
-            'data' => array_values($results),
+            'data' => $results->values()->all(),
         ], 200);
     }
 }
