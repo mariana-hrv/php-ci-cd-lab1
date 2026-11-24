@@ -68,4 +68,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(ModerationRecord::class, 'admin_id');
     }
+
+    // Перевірка ролі адміністратора
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
 }
