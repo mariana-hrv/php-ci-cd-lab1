@@ -25,6 +25,10 @@ class DatabaseSeeder extends Seeder
         $admin = $users->last();
         $buyers = $users->slice(1, 6);
 
+        // Призначення адміністративної ролі
+        $admin->role = 'admin';
+        $admin->save();
+
         // 2. Створення об'єктів нерухомості
         $properties = Property::factory()
             ->count(5)
