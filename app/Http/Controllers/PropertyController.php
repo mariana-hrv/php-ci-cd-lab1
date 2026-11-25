@@ -6,27 +6,43 @@ namespace App\Http\Controllers;
 
 use App\Models\Property;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class PropertyController extends Controller
 {
     // Отримання всіх об'єктів нерухомості
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse|View
     {
-        $properties = Property::query()
-            ->with(['listings', 'photos'])
-            ->get();
+        $query = Property::query()
+            ->with(['listings', 'photos']);
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $properties->map(
-                fn (Property $property): array => $this->formatProperty($property)
-            )->values()->all(),
-        ], 200);
+        if ($request->expectsJson()) {
+            $properties = $query->get();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $properties->map(
+                    fn (Property $property): array => $this->formatProperty($property)
+                )->values()->all(),
+            ], 200);
+        }
+
+        $properties = $query
+            ->orderBy('id', 'desc')
+            ->paginate(10);
+
+        return view('properties.index', compact('properties'));
+    }
+
+    public function create(): View
+    {
+        return view('properties.create');
     }
 
     // Створення нового об'єкта нерухомості
-    public function store(Request $request): JsonResponse
+    public function store(Request $request): JsonResponse|RedirectResponse
     {
         $validated = $request->validate([
             'propertyType' => ['required', 'string', 'min:2', 'max:100'],
@@ -44,6 +60,12 @@ class PropertyController extends Controller
             'rooms' => $validated['rooms'],
         ]);
 
+        if ($request->routeIs('properties.store-form')) {
+            return redirect()
+                ->route('properties.index')
+                ->with('success', 'Об’єкт нерухомості успішно створено!');
+        }
+
         $property->load(['listings', 'photos']);
 
         return response()->json([
@@ -53,23 +75,87 @@ class PropertyController extends Controller
     }
 
     // Отримання об'єкта нерухомості за ID
-    public function show(string $id): JsonResponse
+    public function show(Request $request, string $id): JsonResponse|View
     {
         $property = Property::query()
             ->with(['listings', 'photos'])
             ->find((int) $id);
 
         if ($property === null) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Об’єкт нерухомості з таким ID не знайдено.',
-            ], 404);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Об’єкт нерухомості з таким ID не знайдено.',
+                ], 404);
+            }
+
+            abort(404);
         }
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $this->formatProperty($property),
-        ], 200);
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'data' => $this->formatProperty($property),
+            ], 200);
+        }
+
+        return view('properties.show', compact('property'));
+    }
+
+    public function edit(Request $request, string $id): View
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+
+        $property = Property::findOrFail((int) $id);
+
+        return view('properties.edit', compact('property'));
+    }
+
+    public function update(Request $request, string $id): RedirectResponse
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+
+        $property = Property::findOrFail((int) $id);
+
+        $validated = $request->validate([
+            'propertyType' => ['required', 'string', 'min:2', 'max:100'],
+            'city' => ['required', 'string', 'min:2', 'max:100'],
+            'address' => ['required', 'string', 'min:5', 'max:255'],
+            'area' => ['required', 'numeric', 'gt:0'],
+            'rooms' => ['required', 'integer', 'min:1'],
+        ]);
+
+        $property->update([
+            'property_type' => $validated['propertyType'],
+            'city' => $validated['city'],
+            'address' => $validated['address'],
+            'area' => $validated['area'],
+            'rooms' => $validated['rooms'],
+        ]);
+
+        return redirect()
+            ->route('properties.index')
+            ->with('success', 'Об’єкт нерухомості успішно оновлено!');
+    }
+
+    public function destroy(Request $request, string $id): RedirectResponse
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+
+        $property = Property::findOrFail((int) $id);
+
+        abort_if(
+            $property->listings()->exists()
+                || $property->photos()->exists(),
+            409,
+            'Неможливо видалити об’єкт із пов’язаними записами.'
+        );
+
+        $property->delete();
+
+        return redirect()
+            ->route('properties.index')
+            ->with('success', 'Об’єкт нерухомості успішно видалено!');
     }
 
     // Формування відповіді у форматі попереднього API
