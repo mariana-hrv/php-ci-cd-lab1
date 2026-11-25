@@ -7,12 +7,14 @@ namespace App\Http\Controllers;
 use App\Models\Property;
 use App\Models\PropertyPhoto;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class PropertyPhotoController extends Controller
 {
     // Перегляд фотографій об'єкта нерухомості
-    public function index(string $propertyId): JsonResponse
+    public function index(Request $request, string $propertyId): JsonResponse|View
     {
         $property = Property::findOrFail((int) $propertyId);
 
@@ -21,14 +23,27 @@ class PropertyPhotoController extends Controller
             ->orderBy('id')
             ->get();
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $photos,
-        ], 200);
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'data' => $photos,
+            ], 200);
+        }
+
+        $canManagePhotos = $request->user() !== null
+            && $property->listings()
+                ->where('seller_id', $request->user()->id)
+                ->exists();
+
+        return view('property-photos.index', compact(
+            'property',
+            'photos',
+            'canManagePhotos'
+        ));
     }
 
     // Додавання фотографії до нерухомості
-    public function store(Request $request): JsonResponse
+    public function store(Request $request): JsonResponse|RedirectResponse
     {
         $validated = $request->validate([
             'property_id' => [
@@ -51,22 +66,31 @@ class PropertyPhotoController extends Controller
             $validated['property_id']
         );
 
-        // Перевірка, чи користувач продає цей об'єкт
         $isSeller = $property->listings()
             ->where('seller_id', $request->user()->id)
             ->exists();
 
         if (! $isSeller) {
-            return response()->json([
-                'status' => 'access_denied',
-                'message' => 'Додавати фотографії може лише продавець об’єкта.',
-            ], 403);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => 'access_denied',
+                    'message' => 'Додавати фотографії може лише продавець об’єкта.',
+                ], 403);
+            }
+
+            abort(403);
         }
 
         $photo = $property->photos()->create([
             'file_path' => $validated['file_path'],
             'is_primary' => $validated['is_primary'] ?? false,
         ]);
+
+        if (! $request->expectsJson()) {
+            return redirect()
+                ->route('properties.photos.index', $property->id)
+                ->with('success', 'Фотографію успішно додано!');
+        }
 
         return response()->json([
             'status' => 'created',
@@ -75,7 +99,7 @@ class PropertyPhotoController extends Controller
     }
 
     // Видалення фотографії
-    public function destroy(Request $request, string $id): JsonResponse
+    public function destroy(Request $request, string $id): JsonResponse|RedirectResponse
     {
         $photo = PropertyPhoto::with('property')
             ->findOrFail((int) $id);
@@ -85,13 +109,25 @@ class PropertyPhotoController extends Controller
             ->exists();
 
         if (! $isSeller) {
-            return response()->json([
-                'status' => 'access_denied',
-                'message' => 'Видаляти фотографії може лише продавець об’єкта.',
-            ], 403);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => 'access_denied',
+                    'message' => 'Видаляти фотографії може лише продавець об’єкта.',
+                ], 403);
+            }
+
+            abort(403);
         }
 
+        $propertyId = $photo->property_id;
+
         $photo->delete();
+
+        if (! $request->expectsJson()) {
+            return redirect()
+                ->route('properties.photos.index', $propertyId)
+                ->with('success', 'Фотографію успішно видалено!');
+        }
 
         return response()->json([
             'status' => 'success',

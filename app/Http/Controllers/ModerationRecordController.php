@@ -7,60 +7,96 @@ namespace App\Http\Controllers;
 use App\Models\Listing;
 use App\Models\ModerationRecord;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
 class ModerationRecordController extends Controller
 {
     // Перегляд усіх записів модерації
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): JsonResponse|View
     {
         if (! $request->user()->isAdmin()) {
-            return response()->json([
-                'status' => 'access_denied',
-                'message' => 'Доступ дозволено лише адміністратору.',
-            ], 403);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => 'access_denied',
+                    'message' => 'Доступ дозволено лише адміністратору.',
+                ], 403);
+            }
+
+            abort(403, 'Доступ дозволено лише адміністратору.');
         }
 
-        $records = ModerationRecord::query()
+        $query = ModerationRecord::query()
             ->with(['listing.property', 'admin:id,name'])
-            ->orderByDesc('id')
-            ->get();
+            ->orderByDesc('id');
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $records,
-        ], 200);
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'data' => $query->get(),
+            ], 200);
+        }
+
+        $records = $query->paginate(10);
+
+        return view('moderation-records.index', compact('records'));
     }
 
     // Перегляд окремого запису модерації
-    public function show(Request $request, string $id): JsonResponse
+    public function show(Request $request, string $id): JsonResponse|View
     {
         if (! $request->user()->isAdmin()) {
-            return response()->json([
-                'status' => 'access_denied',
-                'message' => 'Доступ дозволено лише адміністратору.',
-            ], 403);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => 'access_denied',
+                    'message' => 'Доступ дозволено лише адміністратору.',
+                ], 403);
+            }
+
+            abort(403, 'Доступ дозволено лише адміністратору.');
         }
 
         $record = ModerationRecord::query()
             ->with(['listing.property', 'admin:id,name'])
             ->findOrFail((int) $id);
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $record,
-        ], 200);
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'data' => $record,
+            ], 200);
+        }
+
+        return view('moderation-records.show', compact('record'));
+    }
+
+    public function create(Request $request): View
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+
+        $listings = Listing::query()
+            ->with(['property', 'seller:id,name'])
+            ->where('status', 'draft')
+            ->orderByDesc('id')
+            ->get();
+
+        return view('moderation-records.create', compact('listings'));
     }
 
     // Схвалення або відхилення оголошення
-    public function store(Request $request): JsonResponse
+    public function store(Request $request): JsonResponse|RedirectResponse
     {
         if (! $request->user()->isAdmin()) {
-            return response()->json([
-                'status' => 'access_denied',
-                'message' => 'Модерувати оголошення може лише адміністратор.',
-            ], 403);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => 'access_denied',
+                    'message' => 'Модерувати оголошення може лише адміністратор.',
+                ], 403);
+            }
+
+            abort(403);
         }
 
         $validated = $request->validate([
@@ -84,7 +120,6 @@ class ModerationRecordController extends Controller
             $validated['listing_id']
         );
 
-        // Запис рішення та зміна статусу в одній транзакції
         $record = DB::transaction(function () use (
             $listing,
             $validated,
@@ -109,6 +144,12 @@ class ModerationRecordController extends Controller
                 'admin:id,name',
             ]);
         });
+
+        if (! $request->expectsJson()) {
+            return redirect()
+                ->route('moderation-records.index')
+                ->with('success', 'Рішення модерації успішно збережено!');
+        }
 
         return response()->json([
             'status' => 'created',

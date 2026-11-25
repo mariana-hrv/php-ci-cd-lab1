@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\Listing;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class FavoriteListingController extends Controller
 {
-    // Отримання вибраних оголошень користувача
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): JsonResponse|View
     {
         /** @var User $user */
         $user = $request->user();
@@ -20,15 +22,33 @@ class FavoriteListingController extends Controller
             ->with('property')
             ->get();
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $listings,
-        ], 200);
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'data' => $listings,
+            ], 200);
+        }
+
+        $allListings = Listing::query()
+            ->with('property')
+            ->orderBy('id')
+            ->get();
+
+        $selectedIds = $listings->pluck('id')->toArray();
+
+        return view('favorites.index', compact(
+            'listings',
+            'allListings',
+            'selectedIds'
+        ));
     }
 
-    // Оновлення списку вибраних оголошень
-    public function sync(Request $request): JsonResponse
+    public function sync(Request $request): JsonResponse|RedirectResponse
     {
+        if (! $request->expectsJson() && ! $request->has('listing_ids')) {
+            $request->merge(['listing_ids' => []]);
+        }
+
         $validated = $request->validate([
             'listing_ids' => ['present', 'array'],
             'listing_ids.*' => [
@@ -41,20 +61,23 @@ class FavoriteListingController extends Controller
         /** @var User $user */
         $user = $request->user();
 
-        // Синхронізація зв'язку багато-до-багатьох
         $user->favoriteListings()->sync(
             $validated['listing_ids']
         );
 
-        // Завантаження оновленого списку
-        $listings = $user->favoriteListings()
-            ->with('property')
-            ->get();
+        if ($request->expectsJson()) {
+            $listings = $user->favoriteListings()
+                ->with('property')
+                ->get();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Список вибраного оновлено.',
-            'data' => $listings,
-        ], 200);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Список вибраного оновлено.',
+                'data' => $listings,
+            ], 200);
+        }
+
+        return redirect()->route('favorites.index')
+            ->with('success', 'Список вибраного успішно оновлено.');
     }
 }

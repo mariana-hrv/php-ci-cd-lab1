@@ -6,40 +6,52 @@ namespace App\Http\Controllers;
 
 use App\Models\Notification;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class NotificationController extends Controller
 {
     // Отримання сповіщень поточного користувача
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): JsonResponse|View
     {
         $notifications = Notification::query()
             ->where('user_id', $request->user()->id)
             ->orderByDesc('id')
             ->get();
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $notifications,
-        ], 200);
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'data' => $notifications,
+            ], 200);
+        }
+
+        return view('notifications.index', compact('notifications'));
     }
 
     // Перегляд конкретного сповіщення
-    public function show(Request $request, string $id): JsonResponse
+    public function show(Request $request, string $id): JsonResponse|View
     {
         $notification = Notification::query()
             ->where('user_id', $request->user()->id)
             ->findOrFail((int) $id);
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $notification,
-        ], 200);
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'data' => $notification,
+            ], 200);
+        }
+
+        return view('notifications.show', compact('notification'));
     }
 
     // Позначення сповіщення як прочитаного
-    public function markAsRead(Request $request, string $id): JsonResponse
-    {
+    public function markAsRead(
+        Request $request,
+        string $id
+    ): JsonResponse|RedirectResponse {
         $notification = Notification::query()
             ->where('user_id', $request->user()->id)
             ->findOrFail((int) $id);
@@ -48,25 +60,37 @@ class NotificationController extends Controller
             'is_read' => true,
         ]);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Сповіщення позначено як прочитане.',
-            'data' => $notification->fresh(),
-        ], 200);
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Сповіщення позначено як прочитане.',
+                'data' => $notification->fresh(),
+            ], 200);
+        }
+
+        return redirect()->route('notifications.index')
+            ->with('success', 'Сповіщення позначено як прочитане.');
     }
 
     // Видалення сповіщення
-    public function destroy(Request $request, string $id): JsonResponse
-    {
+    public function destroy(
+        Request $request,
+        string $id
+    ): JsonResponse|RedirectResponse {
         $notification = Notification::query()
             ->where('user_id', $request->user()->id)
             ->findOrFail((int) $id);
 
         $notification->delete();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Сповіщення видалено.',
-        ], 200);
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Сповіщення видалено.',
+            ], 200);
+        }
+
+        return redirect()->route('notifications.index')
+            ->with('success', 'Сповіщення успішно видалено.');
     }
 }
