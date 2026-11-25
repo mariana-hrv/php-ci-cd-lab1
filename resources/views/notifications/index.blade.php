@@ -51,7 +51,7 @@
                         Перегляд
                     </a>
 
-                    @if (!$notification->is_read)
+                    @if (!$notification->is_read && auth()->user()->can('markAsRead', $notification))
 
                     <form action="{{ route('notifications.read', $notification->id) }}"
                         method="POST"
@@ -68,7 +68,7 @@
                     </form>
 
                     @endif
-
+                    @can('delete', $notification)
                     <form action="{{ route('notifications.destroy', $notification->id) }}"
                         method="POST"
                         class="d-inline"
@@ -83,6 +83,7 @@
                         </button>
 
                     </form>
+                    @endcan
 
                 </td>
             </tr>

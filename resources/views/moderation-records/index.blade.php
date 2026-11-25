@@ -8,10 +8,14 @@
 
     <h1 class="mb-0">Історія модерації</h1>
 
+    @can('create', \App\Models\ModerationRecord::class)
+
     <a href="{{ route('moderation-records.create') }}"
         class="btn btn-success">
         + Модерувати оголошення
     </a>
+
+    @endcan
 
 </div>
 

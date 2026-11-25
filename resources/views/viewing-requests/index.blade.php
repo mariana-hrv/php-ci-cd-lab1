@@ -15,10 +15,14 @@
             Вхідні заявки
         </a>
 
+        @can('create', \App\Models\ViewingRequest::class)
+
         <a href="{{ route('viewing-requests.create') }}"
             class="btn btn-success">
             + Створити заявку
         </a>
+
+        @endcan
 
     </div>
 

@@ -17,6 +17,7 @@ class ViewingRequestController extends Controller
     // Отримання заявок поточного покупця
     public function index(Request $request): JsonResponse|View
     {
+        $this->authorize('viewAny', ViewingRequest::class);
         $requests = $request->user()
             ->viewingRequests()
             ->with(['listing.property', 'listing.seller:id,name'])
@@ -41,6 +42,8 @@ class ViewingRequestController extends Controller
             ->where('buyer_id', $request->user()->id)
             ->findOrFail((int) $id);
 
+        $this->authorize('view', $viewingRequest);
+
         if ($request->expectsJson()) {
             return response()->json([
                 'status' => 'success',
@@ -56,6 +59,7 @@ class ViewingRequestController extends Controller
 
     public function create(Request $request): View
     {
+        $this->authorize('create', ViewingRequest::class);
         $listings = Listing::query()
             ->with(['property', 'seller:id,name'])
             ->where('status', 'published')
@@ -69,6 +73,7 @@ class ViewingRequestController extends Controller
     // Створення заявки на перегляд
     public function store(Request $request): JsonResponse|RedirectResponse
     {
+        $this->authorize('create', ViewingRequest::class);
         $validated = $request->validate([
             'listing_id' => [
                 'required',
@@ -118,6 +123,7 @@ class ViewingRequestController extends Controller
             ->where('buyer_id', $request->user()->id)
             ->findOrFail((int) $id);
 
+        $this->authorize('update', $viewingRequest);
         abort_unless($viewingRequest->status === 'pending', 409);
 
         return view('viewing-requests.edit', compact('viewingRequest'));
@@ -130,6 +136,7 @@ class ViewingRequestController extends Controller
             ->where('buyer_id', $request->user()->id)
             ->findOrFail((int) $id);
 
+        $this->authorize('update', $viewingRequest);
         if ($viewingRequest->status !== 'pending') {
             if ($request->expectsJson()) {
                 return response()->json([
@@ -177,6 +184,8 @@ class ViewingRequestController extends Controller
             ->where('buyer_id', $request->user()->id)
             ->findOrFail((int) $id);
 
+        $this->authorize('delete', $viewingRequest);
+
         if ($viewingRequest->status !== 'pending') {
             if ($request->expectsJson()) {
                 return response()->json([
@@ -207,6 +216,7 @@ class ViewingRequestController extends Controller
     // Отримання заявок на оголошення поточного продавця
     public function incoming(Request $request): JsonResponse|View
     {
+        $this->authorize('incoming', ViewingRequest::class);
         $requests = ViewingRequest::query()
             ->whereHas('listing', function ($query) use ($request) {
                 $query->where('seller_id', $request->user()->id);
@@ -228,6 +238,7 @@ class ViewingRequestController extends Controller
     // Підтвердження або відхилення заявки продавцем
     public function decide(Request $request, string $id): JsonResponse|RedirectResponse
     {
+
         $validated = $request->validate([
             'status' => ['required', 'in:confirmed,rejected'],
         ]);
@@ -237,7 +248,7 @@ class ViewingRequestController extends Controller
                 $query->where('seller_id', $request->user()->id);
             })
             ->findOrFail((int) $id);
-
+        $this->authorize('decide', $viewingRequest);
         if ($viewingRequest->status !== 'pending') {
             if ($request->expectsJson()) {
                 return response()->json([

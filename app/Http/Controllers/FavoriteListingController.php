@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\Favorite;
 use App\Models\Listing;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -15,6 +16,7 @@ class FavoriteListingController extends Controller
 {
     public function index(Request $request): JsonResponse|View
     {
+        $this->authorize('viewAny', Favorite::class);
         /** @var User $user */
         $user = $request->user();
 
@@ -45,6 +47,7 @@ class FavoriteListingController extends Controller
 
     public function sync(Request $request): JsonResponse|RedirectResponse
     {
+        $this->authorize('sync', Favorite::class);
         if (! $request->expectsJson() && ! $request->has('listing_ids')) {
             $request->merge(['listing_ids' => []]);
         }

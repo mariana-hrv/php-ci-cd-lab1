@@ -17,6 +17,7 @@ class ListingController extends Controller
     // Отримання всіх оголошень
     public function index(Request $request): JsonResponse|View
     {
+        $this->authorize('viewAny', Listing::class);
         $query = Listing::query()
             ->with(['property', 'seller:id,name']);
 
@@ -42,7 +43,7 @@ class ListingController extends Controller
         $listing = Listing::query()
             ->with(['property', 'seller:id,name'])
             ->findOrFail((int) $id);
-
+        $this->authorize('view', $listing);
         if ($request->expectsJson()) {
             return response()->json([
                 'status' => 'success',
@@ -55,6 +56,7 @@ class ListingController extends Controller
 
     public function create(): View
     {
+        $this->authorize('create', Listing::class);
         $properties = Property::query()
             ->orderBy('city')
             ->orderBy('address')
@@ -66,6 +68,7 @@ class ListingController extends Controller
     // Створення оголошення
     public function store(Request $request): JsonResponse|RedirectResponse
     {
+        $this->authorize('create', Listing::class);
         $validated = $request->validate([
             'property_id' => ['required', 'integer', 'exists:properties,id'],
             'price' => ['required', 'numeric', 'gt:0'],
@@ -98,10 +101,7 @@ class ListingController extends Controller
             ->with(['property', 'seller:id,name'])
             ->findOrFail((int) $id);
 
-        abort_unless(
-            $listing->seller_id === $request->user()->id,
-            403
-        );
+        $this->authorize('update', $listing);
 
         return view('listings.edit', compact('listing'));
     }
@@ -111,16 +111,7 @@ class ListingController extends Controller
     {
         $listing = Listing::findOrFail((int) $id);
 
-        if ($listing->seller_id !== $request->user()->id) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'status' => 'access_denied',
-                    'message' => 'Редагувати оголошення може лише його продавець.',
-                ], 403);
-            }
-
-            abort(403);
-        }
+        $this->authorize('update', $listing);
 
         $validated = $request->validate([
             'price' => ['sometimes', 'required', 'numeric', 'gt:0'],
@@ -149,16 +140,7 @@ class ListingController extends Controller
     {
         $listing = Listing::findOrFail((int) $id);
 
-        if ($listing->seller_id !== $request->user()->id) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'status' => 'access_denied',
-                    'message' => 'Видалити оголошення може лише його продавець.',
-                ], 403);
-            }
-
-            abort(403);
-        }
+        $this->authorize('delete', $listing);
 
         $listing->delete();
 

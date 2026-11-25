@@ -89,12 +89,39 @@
                     @endswitch
                 </td>
 
+
                 <td>
-                    <a href="{{ route('listings.show', $listing->id) }}"
-                        class="btn btn-sm btn-info">
-                        Перегляд
-                    </a>
+                    <div class="d-flex flex-wrap gap-1">
+
+                        <a href="{{ route('listings.show', $listing->id) }}"
+                            class="btn btn-sm btn-info">
+                            Перегляд
+                        </a>
+
+                        @can('update', $listing)
+                        <a href="{{ route('listings.edit', $listing->id) }}"
+                            class="btn btn-sm btn-warning">
+                            Редаг.
+                        </a>
+                        @endcan
+
+                        @can('delete', $listing)
+                        <form action="{{ route('listings.destroy', $listing->id) }}"
+                            method="POST"
+                            onsubmit="return confirm('Ви дійсно бажаєте видалити оголошення?');">
+
+                            @csrf
+                            @method('DELETE')
+
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                Видалити
+                            </button>
+                        </form>
+                        @endcan
+
+                    </div>
                 </td>
+
             </tr>
             @empty
             <tr>

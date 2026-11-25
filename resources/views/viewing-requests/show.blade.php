@@ -127,8 +127,8 @@
     </div>
 </div>
 
-@if ($viewingRequest->buyer_id === auth()->id()
-&& $viewingRequest->status === 'pending')
+@can('update', $viewingRequest)
+@if ($viewingRequest->status === 'pending')
 
 <div class="card shadow-sm mt-4">
 
@@ -142,7 +142,7 @@
             class="btn btn-warning">
             Редагувати заявку
         </a>
-
+        @can('delete', $viewingRequest)
         <form action="{{ route('viewing-requests.destroy', $viewingRequest->id) }}"
             method="POST"
             onsubmit="return confirm('Ви дійсно бажаєте скасувати заявку?');">
@@ -155,11 +155,13 @@
             </button>
 
         </form>
+        @endcan
 
     </div>
 
 </div>
 
 @endif
+@endcan
 
 @endsection

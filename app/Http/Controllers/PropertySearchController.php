@@ -12,6 +12,7 @@ class PropertySearchController extends Controller
 {
     public function search(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', Property::class);
         // Валідація параметрів пошуку
         $filters = $request->validate([
             'city' => ['nullable', 'string', 'max:100'],

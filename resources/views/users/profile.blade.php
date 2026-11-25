@@ -134,16 +134,20 @@
 
     <div class="card-body">
 
+        @can('update', $user)
+
         <a href="{{ route('profile.edit') }}"
             class="btn btn-warning">
             Редагувати профіль
         </a>
 
+        @endcan
+
     </div>
 
 </div>
 
-@if (! $user->isAdmin())
+@can('delete', $user)
 
 <div class="card border-danger mt-4">
 
@@ -196,6 +200,6 @@
 
 </div>
 
-@endif
+@endcan
 
 @endsection

@@ -69,6 +69,7 @@
         </div>
         @endif
 
+        @can('sync', \App\Models\Favorite::class)
         <form action="{{ route('favorites.sync') }}" method="POST">
 
             @csrf
@@ -124,6 +125,7 @@
             </a>
 
         </form>
+        @endcan
 
     </div>
 </div>

@@ -75,7 +75,7 @@
                         </a>
                     </li>
 
-                    @if (auth()->user()->isAdmin())
+                    @can('viewAny', \App\Models\ModerationRecord::class)
 
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('moderation-records.index') }}">
@@ -83,13 +83,17 @@
                         </a>
                     </li>
 
+                    @endcan
+
+                    @can('viewAny', \App\Models\User::class)
+
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('users.index') }}">
                             Користувачі
                         </a>
                     </li>
 
-                    @endif
+                    @endcan
                     @endauth
 
                 </ul>

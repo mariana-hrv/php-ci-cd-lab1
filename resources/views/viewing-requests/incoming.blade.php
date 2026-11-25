@@ -101,7 +101,8 @@
                     @endswitch
                 </td>
                 <td>
-                    @if ($viewingRequest->status === 'pending')
+                    @if ($viewingRequest->status === 'pending'
+                    && auth()->user()->can('decide', $viewingRequest))
 
                     <div class="d-flex gap-2">
 

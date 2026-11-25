@@ -8,12 +8,12 @@
 
     <h1 class="mb-0">Об'єкти нерухомості</h1>
 
-    @auth
+    @can('create', \App\Models\Property::class)
     <a href="{{ route('properties.create') }}"
         class="btn btn-success">
         + Додати нерухомість
     </a>
-    @endauth
+    @endcan
 
 </div>
 

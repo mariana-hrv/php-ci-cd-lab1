@@ -16,6 +16,7 @@ class PropertyPhotoController extends Controller
     // Перегляд фотографій об'єкта нерухомості
     public function index(Request $request, string $propertyId): JsonResponse|View
     {
+        $this->authorize('viewAny', PropertyPhoto::class);
         $property = Property::findOrFail((int) $propertyId);
 
         $photos = $property->photos()
@@ -30,10 +31,10 @@ class PropertyPhotoController extends Controller
             ], 200);
         }
 
-        $canManagePhotos = $request->user() !== null
-            && $property->listings()
-                ->where('seller_id', $request->user()->id)
-                ->exists();
+        $canManagePhotos = $request->user()?->can(
+            'create',
+            [PropertyPhoto::class, $property]
+        ) ?? false;
 
         return view('property-photos.index', compact(
             'property',
@@ -66,20 +67,7 @@ class PropertyPhotoController extends Controller
             $validated['property_id']
         );
 
-        $isSeller = $property->listings()
-            ->where('seller_id', $request->user()->id)
-            ->exists();
-
-        if (! $isSeller) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'status' => 'access_denied',
-                    'message' => 'Додавати фотографії може лише продавець об’єкта.',
-                ], 403);
-            }
-
-            abort(403);
-        }
+        $this->authorize('create', [PropertyPhoto::class, $property]);
 
         $photo = $property->photos()->create([
             'file_path' => $validated['file_path'],
@@ -104,20 +92,7 @@ class PropertyPhotoController extends Controller
         $photo = PropertyPhoto::with('property')
             ->findOrFail((int) $id);
 
-        $isSeller = $photo->property->listings()
-            ->where('seller_id', $request->user()->id)
-            ->exists();
-
-        if (! $isSeller) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'status' => 'access_denied',
-                    'message' => 'Видаляти фотографії може лише продавець об’єкта.',
-                ], 403);
-            }
-
-            abort(403);
-        }
+        $this->authorize('delete', $photo);
 
         $propertyId = $photo->property_id;
 
