@@ -15,6 +15,7 @@ class PropertyController extends Controller
     // Отримання всіх об'єктів нерухомості
     public function index(Request $request): JsonResponse|View
     {
+        $this->authorize('viewAny', Property::class);
         $query = Property::query()
             ->with(['listings', 'photos']);
 
@@ -38,12 +39,15 @@ class PropertyController extends Controller
 
     public function create(): View
     {
+        $this->authorize('create', Property::class);
+
         return view('properties.create');
     }
 
     // Створення нового об'єкта нерухомості
     public function store(Request $request): JsonResponse|RedirectResponse
     {
+        $this->authorize('create', Property::class);
         $validated = $request->validate([
             'propertyType' => ['required', 'string', 'min:2', 'max:100'],
             'city' => ['required', 'string', 'min:2', 'max:100'],
@@ -91,6 +95,7 @@ class PropertyController extends Controller
 
             abort(404);
         }
+        $this->authorize('view', $property);
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -104,18 +109,18 @@ class PropertyController extends Controller
 
     public function edit(Request $request, string $id): View
     {
-        abort_unless($request->user()->isAdmin(), 403);
-
         $property = Property::findOrFail((int) $id);
+
+        $this->authorize('update', $property);
 
         return view('properties.edit', compact('property'));
     }
 
     public function update(Request $request, string $id): RedirectResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
-
         $property = Property::findOrFail((int) $id);
+
+        $this->authorize('update', $property);
 
         $validated = $request->validate([
             'propertyType' => ['required', 'string', 'min:2', 'max:100'],
@@ -140,9 +145,9 @@ class PropertyController extends Controller
 
     public function destroy(Request $request, string $id): RedirectResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
-
         $property = Property::findOrFail((int) $id);
+
+        $this->authorize('delete', $property);
 
         abort_if(
             $property->listings()->exists()

@@ -16,6 +16,7 @@ class UserController extends Controller
     public function profile(Request $request): View
     {
         $user = $request->user();
+        $this->authorize('view', $user);
 
         $user->loadCount([
             'listings',
@@ -29,7 +30,7 @@ class UserController extends Controller
 
     public function index(Request $request): View
     {
-        abort_unless($request->user()->isAdmin(), 403);
+        $this->authorize('viewAny', User::class);
 
         $users = User::query()
             ->withCount([
@@ -45,7 +46,7 @@ class UserController extends Controller
 
     public function show(Request $request, string $id): View
     {
-        abort_unless($request->user()->isAdmin(), 403);
+        $this->authorize('viewAny', User::class);
 
         $user = User::query()
             ->withCount([
@@ -55,6 +56,7 @@ class UserController extends Controller
                 'propertyNotifications',
             ])
             ->findOrFail((int) $id);
+        $this->authorize('view', $user);
 
         return view('users.show', compact('user'));
     }
@@ -62,6 +64,7 @@ class UserController extends Controller
     public function edit(Request $request): View
     {
         $user = $request->user();
+        $this->authorize('update', $user);
 
         return view('users.edit', compact('user'));
     }
@@ -69,6 +72,7 @@ class UserController extends Controller
     public function update(Request $request): RedirectResponse
     {
         $user = $request->user();
+        $this->authorize('update', $user);
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -91,7 +95,7 @@ class UserController extends Controller
     {
         $user = $request->user();
 
-        abort_if($user->isAdmin(), 403);
+        $this->authorize('delete', $user);
 
         $request->validate([
             'password' => ['required', 'current_password'],

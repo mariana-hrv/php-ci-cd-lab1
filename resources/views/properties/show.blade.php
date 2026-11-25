@@ -121,9 +121,7 @@
     </div>
 </div>
 
-@auth
-
-@if (auth()->user()->isAdmin())
+@can('update', $property)
 
 <div class="card shadow-sm mt-4">
 
@@ -139,6 +137,7 @@
                 class="btn btn-warning">
                 Редагувати нерухомість
             </a>
+            @can('delete', $property)
 
             @if ($property->listings->isEmpty() && $property->photos->isEmpty())
 
@@ -156,6 +155,7 @@
             </form>
 
             @endif
+            @endcan
 
         </div>
 
@@ -173,8 +173,6 @@
 
 </div>
 
-@endif
-
-@endauth
+@endcan
 
 @endsection

@@ -17,16 +17,7 @@ class ModerationRecordController extends Controller
     // Перегляд усіх записів модерації
     public function index(Request $request): JsonResponse|View
     {
-        if (! $request->user()->isAdmin()) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'status' => 'access_denied',
-                    'message' => 'Доступ дозволено лише адміністратору.',
-                ], 403);
-            }
-
-            abort(403, 'Доступ дозволено лише адміністратору.');
-        }
+        $this->authorize('viewAny', ModerationRecord::class);
 
         $query = ModerationRecord::query()
             ->with(['listing.property', 'admin:id,name'])
@@ -47,20 +38,13 @@ class ModerationRecordController extends Controller
     // Перегляд окремого запису модерації
     public function show(Request $request, string $id): JsonResponse|View
     {
-        if (! $request->user()->isAdmin()) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'status' => 'access_denied',
-                    'message' => 'Доступ дозволено лише адміністратору.',
-                ], 403);
-            }
-
-            abort(403, 'Доступ дозволено лише адміністратору.');
-        }
+        $this->authorize('viewAny', ModerationRecord::class);
 
         $record = ModerationRecord::query()
             ->with(['listing.property', 'admin:id,name'])
             ->findOrFail((int) $id);
+
+        $this->authorize('view', $record);
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -74,7 +58,7 @@ class ModerationRecordController extends Controller
 
     public function create(Request $request): View
     {
-        abort_unless($request->user()->isAdmin(), 403);
+        $this->authorize('create', ModerationRecord::class);
 
         $listings = Listing::query()
             ->with(['property', 'seller:id,name'])
@@ -88,16 +72,7 @@ class ModerationRecordController extends Controller
     // Схвалення або відхилення оголошення
     public function store(Request $request): JsonResponse|RedirectResponse
     {
-        if (! $request->user()->isAdmin()) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'status' => 'access_denied',
-                    'message' => 'Модерувати оголошення може лише адміністратор.',
-                ], 403);
-            }
-
-            abort(403);
-        }
+        $this->authorize('create', ModerationRecord::class);
 
         $validated = $request->validate([
             'listing_id' => [

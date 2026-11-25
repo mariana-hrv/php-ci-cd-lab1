@@ -60,7 +60,7 @@ Route::prefix('properties')->name('properties.')->group(function () {
 
     // Створення нового об'єкта з перевіркою доступу
     Route::post('/', [PropertyController::class, 'store'])
-        ->middleware('property.access')
+        ->middleware(['auth', 'property.access'])
         ->name('store');
 
     // HTML-форма створення нерухомості

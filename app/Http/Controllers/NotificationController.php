@@ -15,6 +15,7 @@ class NotificationController extends Controller
     // Отримання сповіщень поточного користувача
     public function index(Request $request): JsonResponse|View
     {
+        $this->authorize('viewAny', Notification::class);
         $notifications = Notification::query()
             ->where('user_id', $request->user()->id)
             ->orderByDesc('id')
@@ -36,7 +37,7 @@ class NotificationController extends Controller
         $notification = Notification::query()
             ->where('user_id', $request->user()->id)
             ->findOrFail((int) $id);
-
+        $this->authorize('view', $notification);
         if ($request->expectsJson()) {
             return response()->json([
                 'status' => 'success',
@@ -55,7 +56,7 @@ class NotificationController extends Controller
         $notification = Notification::query()
             ->where('user_id', $request->user()->id)
             ->findOrFail((int) $id);
-
+        $this->authorize('markAsRead', $notification);
         $notification->update([
             'is_read' => true,
         ]);
@@ -81,6 +82,7 @@ class NotificationController extends Controller
             ->where('user_id', $request->user()->id)
             ->findOrFail((int) $id);
 
+        $this->authorize('delete', $notification);
         $notification->delete();
 
         if ($request->expectsJson()) {

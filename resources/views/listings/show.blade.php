@@ -104,9 +104,7 @@
     </div>
 </div>
 
-@auth
-
-@if ($listing->seller_id === auth()->id())
+@can('update', $listing)
 
 <div class="card shadow-sm mt-4">
 
@@ -121,6 +119,7 @@
             Редагувати оголошення
         </a>
 
+        @can('delete', $listing)
         <form action="{{ route('listings.destroy', $listing->id) }}"
             method="POST"
             onsubmit="return confirm('Ви дійсно бажаєте видалити оголошення?');">
@@ -133,13 +132,11 @@
             </button>
 
         </form>
+        @endcan
 
     </div>
 
 </div>
 
-@endif
-
-@endauth
-
+@endcan
 @endsection

@@ -1,0 +1,2723 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Real Estate Sales API",
+        "description": "REST API системи продажу нерухомості. Лабораторна робота №8.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://127.0.0.1:8000/api/v1",
+            "description": "Локальний сервер Laravel"
+        }
+    ],
+    "paths": {
+        "/register": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Реєстрація користувача",
+                "operationId": "5d4fa5d5607ed675ba93907e1fc94534",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "API Test User"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "api-test@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "TestPassword123!"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "example": "TestPassword123!"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Користувача зареєстровано",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1|example-token"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Помилка валідації"
+                    },
+                    "429": {
+                        "description": "Забагато запитів"
+                    }
+                }
+            }
+        },
+        "/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Вхід та отримання токена Sanctum",
+                "operationId": "67d6d0fdd54fba132e1b6f55ca254183",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "api-test@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "TestPassword123!"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Успішна автентифікація",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1|example-token"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Помилка валідації"
+                    },
+                    "429": {
+                        "description": "Забагато запитів"
+                    },
+                    "default": {
+                        "description": "Помилка автентифікації"
+                    }
+                }
+            }
+        },
+        "/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Вихід та відкликання поточного токена",
+                "operationId": "28d48c13fca984400ac8de99f54ee13a",
+                "responses": {
+                    "200": {
+                        "description": "Успішний вихід",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/favorites": {
+            "get": {
+                "tags": [
+                    "Favorites"
+                ],
+                "summary": "Отримати власні вибрані оголошення",
+                "description": "Повертає лише вибрані оголошення автентифікованого користувача.",
+                "operationId": "6c38eebf4def752b6743f00973fdd0d8",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список вибраних оголошень із пагінацією",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Favorite"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Доступ заборонено"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Favorites"
+                ],
+                "summary": "Синхронізувати вибрані оголошення",
+                "description": "Замінює власний список вибраного переданим масивом ідентифікаторів. Порожній масив очищує список.",
+                "operationId": "ddb2ca8fdf611ccaa0af7cf194f12642",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "example": 1
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "listing_ids"
+                                ],
+                                "properties": {
+                                    "listing_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            1,
+                                            5,
+                                            11
+                                        ],
+                                        "uniqueItems": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Список вибраних оголошень успішно оновлено",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Favorite"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Доступ заборонено"
+                    },
+                    "422": {
+                        "description": "Помилка валідації"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/listings": {
+            "get": {
+                "tags": [
+                    "Listings"
+                ],
+                "summary": "Отримати список оголошень",
+                "operationId": "0e370579d7f8669103b7b2c2f91037d8",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список оголошень із пагінацією",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Listing"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Listings"
+                ],
+                "summary": "Створити оголошення",
+                "description": "Власником автоматично стає автентифікований користувач.",
+                "operationId": "0a7dd87f16e32981cf2b0ff3baa12ba7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "property_id",
+                                    "price"
+                                ],
+                                "properties": {
+                                    "property_id": {
+                                        "type": "integer",
+                                        "example": 6
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "example": 2500000
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Тестове оголошення через Swagger",
+                                        "nullable": true
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "example": "draft",
+                                        "enum": [
+                                            "draft",
+                                            "published",
+                                            "archived"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Оголошення успішно створено",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Listing"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Доступ заборонено"
+                    },
+                    "422": {
+                        "description": "Помилка валідації"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/listings/{listing}": {
+            "get": {
+                "tags": [
+                    "Listings"
+                ],
+                "summary": "Переглянути окреме оголошення",
+                "operationId": "86bee35d7c09fc4145c50e5b558cd15a",
+                "parameters": [
+                    {
+                        "name": "listing",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 11
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Дані оголошення",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Listing"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Оголошення не знайдено"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Listings"
+                ],
+                "summary": "Оновити оголошення",
+                "description": "Редагувати оголошення може лише його власник.",
+                "operationId": "8b5841ea3a7a314bf2fb09a278288d1f",
+                "parameters": [
+                    {
+                        "name": "listing",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 11
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "price": {
+                                        "type": "number",
+                                        "example": 2700000
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Оновлено через Swagger",
+                                        "nullable": true
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "example": "published",
+                                        "enum": [
+                                            "draft",
+                                            "published",
+                                            "archived"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Оголошення успішно оновлено",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Listing"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Користувач не є власником оголошення"
+                    },
+                    "404": {
+                        "description": "Оголошення не знайдено"
+                    },
+                    "422": {
+                        "description": "Помилка валідації"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Listings"
+                ],
+                "summary": "Видалити оголошення",
+                "description": "Видаляти оголошення може лише його власник.",
+                "operationId": "d7b6302686cd0eab833608f7fa209157",
+                "parameters": [
+                    {
+                        "name": "listing",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 11
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Оголошення успішно видалено",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Оголошення успішно видалено."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Користувач не є власником оголошення"
+                    },
+                    "404": {
+                        "description": "Оголошення не знайдено"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moderation-records": {
+            "get": {
+                "tags": [
+                    "ModerationRecords"
+                ],
+                "summary": "Отримати список записів модерації",
+                "description": "Операція доступна лише адміністратору.",
+                "operationId": "403812ad3e0bf740abdc4d3a9ba9f892",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список записів модерації з пагінацією",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ModerationRecord"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Доступ дозволено лише адміністратору"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "ModerationRecords"
+                ],
+                "summary": "Модерувати оголошення",
+                "description": "Адміністратор схвалює або відхиляє оголошення. Рішення модерації та зміна статусу оголошення зберігаються в одній транзакції.",
+                "operationId": "2792e9e82710bb927cc88887739cb695",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "listing_id",
+                                    "decision"
+                                ],
+                                "properties": {
+                                    "listing_id": {
+                                        "type": "integer",
+                                        "example": 11
+                                    },
+                                    "decision": {
+                                        "type": "string",
+                                        "example": "approved",
+                                        "enum": [
+                                            "approved",
+                                            "rejected"
+                                        ]
+                                    },
+                                    "comment": {
+                                        "type": "string",
+                                        "example": "Оголошення відповідає вимогам.",
+                                        "nullable": true,
+                                        "maxLength": 1000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Рішення модерації успішно збережено",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/ModerationRecord"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Доступ дозволено лише адміністратору"
+                    },
+                    "422": {
+                        "description": "Помилка валідації"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moderation-records/{moderationRecord}": {
+            "get": {
+                "tags": [
+                    "ModerationRecords"
+                ],
+                "summary": "Переглянути окремий запис модерації",
+                "description": "Операція доступна лише адміністратору.",
+                "operationId": "086fcce949b9d8126d14fd850c1b08f5",
+                "parameters": [
+                    {
+                        "name": "moderationRecord",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Дані запису модерації",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/ModerationRecord"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Доступ дозволено лише адміністратору"
+                    },
+                    "404": {
+                        "description": "Запис модерації не знайдено"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/notifications": {
+            "get": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Отримати власні сповіщення",
+                "description": "Повертає лише сповіщення автентифікованого користувача.",
+                "operationId": "7eca2b9e84a26784eb55b3fc6b697567",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список сповіщень із пагінацією",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Notification"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Доступ заборонено"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/notifications/{notification}": {
+            "get": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Переглянути окреме сповіщення",
+                "operationId": "274216468fbc71ebeca314951fff1a75",
+                "parameters": [
+                    {
+                        "name": "notification",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Дані сповіщення",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Notification"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Користувач не є власником сповіщення"
+                    },
+                    "404": {
+                        "description": "Сповіщення не знайдено"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Видалити власне сповіщення",
+                "operationId": "f471e03d3f4e1b041c28fc4ce4631532",
+                "parameters": [
+                    {
+                        "name": "notification",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Сповіщення успішно видалено",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Сповіщення успішно видалено."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Користувач не є власником сповіщення"
+                    },
+                    "404": {
+                        "description": "Сповіщення не знайдено"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/notifications/{notification}/read": {
+            "patch": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Позначити сповіщення прочитаним",
+                "description": "Встановлює значення is_read у true. Операція доступна лише власнику сповіщення.",
+                "operationId": "ad429749d8ccc57ac5a12762bb9ed982",
+                "parameters": [
+                    {
+                        "name": "notification",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Сповіщення позначено прочитаним",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Notification"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Користувач не є власником сповіщення"
+                    },
+                    "404": {
+                        "description": "Сповіщення не знайдено"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/properties": {
+            "get": {
+                "tags": [
+                    "Properties"
+                ],
+                "summary": "Отримати список об’єктів нерухомості",
+                "operationId": "0ea299a643ebdff611244e8be55ae372",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список нерухомості з пагінацією",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Property"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Properties"
+                ],
+                "summary": "Створити об’єкт нерухомості",
+                "operationId": "d8c04028c8d5ea0f32f53d09ace2536a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "property_type",
+                                    "city",
+                                    "address",
+                                    "area",
+                                    "rooms"
+                                ],
+                                "properties": {
+                                    "property_type": {
+                                        "type": "string",
+                                        "example": "Квартира",
+                                        "maxLength": 100,
+                                        "minLength": 2
+                                    },
+                                    "city": {
+                                        "type": "string",
+                                        "example": "Івано-Франківськ",
+                                        "maxLength": 100,
+                                        "minLength": 2
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "вул. Галицька, 15",
+                                        "maxLength": 255,
+                                        "minLength": 5
+                                    },
+                                    "area": {
+                                        "type": "number",
+                                        "example": 75.5
+                                    },
+                                    "rooms": {
+                                        "type": "integer",
+                                        "example": 3,
+                                        "minimum": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Об’єкт нерухомості створено",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Property"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Доступ заборонено"
+                    },
+                    "422": {
+                        "description": "Помилка валідації"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/properties/{property}": {
+            "get": {
+                "tags": [
+                    "Properties"
+                ],
+                "summary": "Переглянути окремий об’єкт нерухомості",
+                "operationId": "436d0699158805b06f5d6e6f7bac556b",
+                "parameters": [
+                    {
+                        "name": "property",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 6
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Дані об’єкта нерухомості",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Property"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Об’єкт не знайдено"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Properties"
+                ],
+                "summary": "Оновити об’єкт нерухомості",
+                "description": "Редагування доступне лише адміністратору.",
+                "operationId": "787e13bab9d56a6dd272b7f7f94fa83a",
+                "parameters": [
+                    {
+                        "name": "property",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 6
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "property_type",
+                                    "city",
+                                    "address",
+                                    "area",
+                                    "rooms"
+                                ],
+                                "properties": {
+                                    "property_type": {
+                                        "type": "string",
+                                        "example": "Квартира",
+                                        "maxLength": 100,
+                                        "minLength": 2
+                                    },
+                                    "city": {
+                                        "type": "string",
+                                        "example": "Івано-Франківськ",
+                                        "maxLength": 100,
+                                        "minLength": 2
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "вул. Галицька, 20",
+                                        "maxLength": 255,
+                                        "minLength": 5
+                                    },
+                                    "area": {
+                                        "type": "number",
+                                        "example": 80.5
+                                    },
+                                    "rooms": {
+                                        "type": "integer",
+                                        "example": 3,
+                                        "minimum": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Об’єкт нерухомості оновлено",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Property"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Доступ дозволено лише адміністратору"
+                    },
+                    "404": {
+                        "description": "Об’єкт не знайдено"
+                    },
+                    "422": {
+                        "description": "Помилка валідації"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Properties"
+                ],
+                "summary": "Видалити об’єкт нерухомості",
+                "description": "Видалення доступне адміністратору за відсутності пов’язаних оголошень і фотографій.",
+                "operationId": "ac3733a6bcfe1467ef13c0b311c181bb",
+                "parameters": [
+                    {
+                        "name": "property",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 6
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Об’єкт нерухомості видалено",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Об’єкт нерухомості успішно видалено."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Доступ дозволено лише адміністратору"
+                    },
+                    "404": {
+                        "description": "Об’єкт не знайдено"
+                    },
+                    "409": {
+                        "description": "Об’єкт містить пов’язані записи"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/properties/{property}/photos": {
+            "get": {
+                "tags": [
+                    "PropertyPhotos"
+                ],
+                "summary": "Отримати фотографії об’єкта нерухомості",
+                "operationId": "bc915c7d1cc9940a546f7f877ce3d1ba",
+                "parameters": [
+                    {
+                        "name": "property",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 6
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список фотографій із пагінацією",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PropertyPhoto"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Об’єкт нерухомості не знайдено"
+                    }
+                }
+            }
+        },
+        "/photos/{photo}": {
+            "get": {
+                "tags": [
+                    "PropertyPhotos"
+                ],
+                "summary": "Переглянути окрему фотографію",
+                "operationId": "6c8ab1f5359f09303574dd18e981f2d7",
+                "parameters": [
+                    {
+                        "name": "photo",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 11
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Дані фотографії",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/PropertyPhoto"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Фотографію не знайдено"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "PropertyPhotos"
+                ],
+                "summary": "Видалити фотографію нерухомості",
+                "description": "Видалення доступне продавцю, який має оголошення для відповідного об’єкта нерухомості.",
+                "operationId": "6e7a77f1c6e7ea2dff0ec0f6e532b79e",
+                "parameters": [
+                    {
+                        "name": "photo",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 11
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Фотографію успішно видалено",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Фотографію успішно видалено."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Доступ заборонено"
+                    },
+                    "404": {
+                        "description": "Фотографію не знайдено"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/photos": {
+            "post": {
+                "tags": [
+                    "PropertyPhotos"
+                ],
+                "summary": "Додати фотографію нерухомості",
+                "description": "Додавати фотографії може продавець, який має оголошення для відповідного об’єкта нерухомості.",
+                "operationId": "b1f332d8b5f3c5e514b46ac2cc441e5b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "property_id",
+                                    "file_path"
+                                ],
+                                "properties": {
+                                    "property_id": {
+                                        "type": "integer",
+                                        "example": 6
+                                    },
+                                    "file_path": {
+                                        "type": "string",
+                                        "example": "properties/swagger-photo.jpg",
+                                        "maxLength": 255
+                                    },
+                                    "is_primary": {
+                                        "type": "boolean",
+                                        "example": true,
+                                        "default": false
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Фотографію успішно додано",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/PropertyPhoto"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Користувач не має права додавати фотографії цього об’єкта"
+                    },
+                    "422": {
+                        "description": "Помилка валідації"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Отримати список користувачів",
+                "description": "Операція доступна лише адміністратору.",
+                "operationId": "15a1555d1d1308580ebe100b63a494eb",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список користувачів із пагінацією",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/User"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Доступ дозволено лише адміністратору"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users/{user}": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Переглянути окремого користувача",
+                "description": "Операція доступна лише адміністратору.",
+                "operationId": "d7a131f3db2ba7a74c3d56b5df7013fc",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 9
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Дані користувача",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Доступ дозволено лише адміністратору"
+                    },
+                    "404": {
+                        "description": "Користувача не знайдено"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/profile": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Переглянути власний профіль",
+                "operationId": "db83b3dec9daaef7a1a92d7e6d9eca5a",
+                "responses": {
+                    "200": {
+                        "description": "Дані автентифікованого користувача",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Доступ заборонено"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Оновити власний профіль",
+                "description": "Користувач може змінювати власне ім’я та електронну пошту. Зміна ролі не передбачена.",
+                "operationId": "78bb8da06707e9d8cce322df5a8ad2cb",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "API Test User",
+                                        "maxLength": 255
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "api-updated@example.com",
+                                        "maxLength": 255
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Профіль успішно оновлено",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Доступ заборонено"
+                    },
+                    "422": {
+                        "description": "Помилка валідації або електронна пошта вже використовується"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Видалити власний обліковий запис",
+                "description": "Потребує підтвердження поточного пароля. Видалення адміністратора та користувача з пов’язаними даними заборонено.",
+                "operationId": "2d24af2dfc2cf0d6607453d091b8f1ea",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "password"
+                                ],
+                                "properties": {
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "TestPassword123!"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Обліковий запис успішно видалено",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Обліковий запис успішно видалено."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Видалення облікового запису заборонено"
+                    },
+                    "409": {
+                        "description": "Користувач має пов’язані записи"
+                    },
+                    "422": {
+                        "description": "Неправильний пароль або помилка валідації"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/viewing-requests": {
+            "get": {
+                "tags": [
+                    "ViewingRequests"
+                ],
+                "summary": "Отримати власні заявки на перегляд",
+                "operationId": "8b36c5042c30b9b399e28c934c4e1da4",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список власних заявок із пагінацією",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ViewingRequest"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Доступ заборонено"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "ViewingRequests"
+                ],
+                "summary": "Створити заявку на перегляд нерухомості",
+                "description": "Покупець визначається за токеном Sanctum. Початковий статус заявки — pending.",
+                "operationId": "dd6db65a6bf00b6814d1890d9a8b896f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "listing_id",
+                                    "preferred_date",
+                                    "preferred_time"
+                                ],
+                                "properties": {
+                                    "listing_id": {
+                                        "type": "integer",
+                                        "example": 11
+                                    },
+                                    "preferred_date": {
+                                        "description": "Дата не раніше поточного дня",
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-12-01"
+                                    },
+                                    "preferred_time": {
+                                        "description": "Час у форматі HH:mm",
+                                        "type": "string",
+                                        "example": "14:30"
+                                    },
+                                    "comment": {
+                                        "type": "string",
+                                        "example": "Бажаю оглянути квартиру",
+                                        "nullable": true,
+                                        "maxLength": 1000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Заявку успішно створено",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/ViewingRequest"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Доступ заборонено"
+                    },
+                    "422": {
+                        "description": "Помилка валідації"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/viewing-requests/{viewingRequest}": {
+            "get": {
+                "tags": [
+                    "ViewingRequests"
+                ],
+                "summary": "Переглянути власну заявку",
+                "operationId": "47888f0fc8c491f37d38f6867cf147aa",
+                "parameters": [
+                    {
+                        "name": "viewingRequest",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Дані заявки",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/ViewingRequest"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Користувач не є власником заявки"
+                    },
+                    "404": {
+                        "description": "Заявку не знайдено"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "ViewingRequests"
+                ],
+                "summary": "Оновити власну заявку",
+                "description": "Редагування дозволено лише власнику заявки зі статусом pending.",
+                "operationId": "edadccf06bbbbba9fbc972256ed1a396",
+                "parameters": [
+                    {
+                        "name": "viewingRequest",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "preferred_date": {
+                                        "description": "Дата не раніше поточного дня",
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-12-02"
+                                    },
+                                    "preferred_time": {
+                                        "description": "Час у форматі HH:mm",
+                                        "type": "string",
+                                        "example": "16:00"
+                                    },
+                                    "comment": {
+                                        "type": "string",
+                                        "example": "Прошу перенести перегляд",
+                                        "nullable": true,
+                                        "maxLength": 1000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Заявку успішно оновлено",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/ViewingRequest"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Користувач не є власником заявки"
+                    },
+                    "404": {
+                        "description": "Заявку не знайдено"
+                    },
+                    "409": {
+                        "description": "Редагування заявки з поточним статусом заборонено"
+                    },
+                    "422": {
+                        "description": "Помилка валідації"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "ViewingRequests"
+                ],
+                "summary": "Скасувати власну заявку",
+                "description": "Змінює статус заявки з pending на cancelled без фізичного видалення запису.",
+                "operationId": "37e066d23c7d674d8714b8281fe4cfc5",
+                "parameters": [
+                    {
+                        "name": "viewingRequest",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Заявку успішно скасовано",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Заявку успішно скасовано."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Користувач не є власником заявки"
+                    },
+                    "404": {
+                        "description": "Заявку не знайдено"
+                    },
+                    "409": {
+                        "description": "Скасування заявки з поточним статусом заборонено"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/viewing-requests/incoming": {
+            "get": {
+                "tags": [
+                    "ViewingRequests"
+                ],
+                "summary": "Отримати вхідні заявки продавця",
+                "description": "Повертає заявки на оголошення автентифікованого продавця.",
+                "operationId": "4883329ee9cc8b09814e464bca757757",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список вхідних заявок із пагінацією",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ViewingRequest"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Доступ заборонено"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/viewing-requests/{viewingRequest}/decide": {
+            "patch": {
+                "tags": [
+                    "ViewingRequests"
+                ],
+                "summary": "Підтвердити або відхилити заявку",
+                "description": "Операція доступна продавцю відповідного оголошення для заявки зі статусом pending. Покупцеві автоматично створюється сповіщення.",
+                "operationId": "658df61502f6fcfe4a4f0376358be1ae",
+                "parameters": [
+                    {
+                        "name": "viewingRequest",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "example": "confirmed",
+                                        "enum": [
+                                            "confirmed",
+                                            "rejected"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Рішення продавця успішно збережено",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/ViewingRequest"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не автентифіковано"
+                    },
+                    "403": {
+                        "description": "Користувач не є продавцем відповідного оголошення"
+                    },
+                    "404": {
+                        "description": "Заявку не знайдено"
+                    },
+                    "409": {
+                        "description": "Заявку вже опрацьовано або скасовано"
+                    },
+                    "422": {
+                        "description": "Недопустиме рішення або помилка валідації"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Favorite": {
+                "description": "Вибране оголошення користувача",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 9
+                    },
+                    "listing_id": {
+                        "type": "integer",
+                        "example": 11
+                    },
+                    "note": {
+                        "type": "string",
+                        "example": "Цікава квартира",
+                        "nullable": true
+                    },
+                    "listing": {
+                        "$ref": "#/components/schemas/Listing"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Listing": {
+                "description": "Оголошення про продаж нерухомості",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 11
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "double",
+                        "example": 2500000
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Продаж двокімнатної квартири",
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "published",
+                        "enum": [
+                            "draft",
+                            "published",
+                            "archived"
+                        ]
+                    },
+                    "seller_id": {
+                        "type": "integer",
+                        "example": 9
+                    },
+                    "property": {
+                        "properties": {
+                            "id": {
+                                "type": "integer"
+                            },
+                            "property_type": {
+                                "type": "string"
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "address": {
+                                "type": "string"
+                            },
+                            "area": {
+                                "type": "number"
+                            },
+                            "rooms": {
+                                "type": "integer"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "seller": {
+                        "properties": {
+                            "id": {
+                                "type": "integer"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "ModerationRecord": {
+                "description": "Запис модерації оголошення",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "listing_id": {
+                        "type": "integer",
+                        "example": 11
+                    },
+                    "admin_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "decision": {
+                        "type": "string",
+                        "example": "approved",
+                        "enum": [
+                            "approved",
+                            "rejected"
+                        ]
+                    },
+                    "comment": {
+                        "type": "string",
+                        "example": "Оголошення відповідає вимогам.",
+                        "nullable": true
+                    },
+                    "listing": {
+                        "$ref": "#/components/schemas/Listing"
+                    },
+                    "admin": {
+                        "properties": {
+                            "id": {
+                                "type": "integer"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Notification": {
+                "description": "Сповіщення користувача",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 9
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "viewing_request"
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Вашу заявку на перегляд нерухомості підтверджено."
+                    },
+                    "is_read": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "PropertyPhoto": {
+                "description": "Фотографія об’єкта нерухомості",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 11
+                    },
+                    "property_id": {
+                        "type": "integer",
+                        "example": 6
+                    },
+                    "file_path": {
+                        "type": "string",
+                        "example": "properties/photo1.jpg"
+                    },
+                    "is_primary": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Property": {
+                "description": "Об’єкт нерухомості",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 6
+                    },
+                    "property_type": {
+                        "type": "string",
+                        "example": "Квартира"
+                    },
+                    "city": {
+                        "type": "string",
+                        "example": "Івано-Франківськ"
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "вул. Галицька, 15"
+                    },
+                    "area": {
+                        "type": "number",
+                        "format": "double",
+                        "example": 75.5
+                    },
+                    "rooms": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "listings": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Listing"
+                        }
+                    },
+                    "photos": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PropertyPhoto"
+                        }
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "User": {
+                "description": "Користувач системи продажу нерухомості",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 9
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Тестовий покупець"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "buyer@example.com"
+                    },
+                    "role": {
+                        "type": "string",
+                        "example": "user"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "ViewingRequest": {
+                "description": "Заявка на перегляд нерухомості",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "buyer_id": {
+                        "type": "integer",
+                        "example": 9
+                    },
+                    "listing_id": {
+                        "type": "integer",
+                        "example": 11
+                    },
+                    "preferred_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2026-12-01"
+                    },
+                    "preferred_time": {
+                        "type": "string",
+                        "example": "14:30"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "pending",
+                        "enum": [
+                            "pending",
+                            "confirmed",
+                            "rejected",
+                            "cancelled"
+                        ]
+                    },
+                    "comment": {
+                        "type": "string",
+                        "example": "Бажаю оглянути квартиру",
+                        "nullable": true
+                    },
+                    "listing": {
+                        "$ref": "#/components/schemas/Listing"
+                    },
+                    "buyer": {
+                        "properties": {
+                            "id": {
+                                "type": "integer"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "description": "Токен автентифікації Laravel Sanctum",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Authentication",
+            "description": "Authentication"
+        },
+        {
+            "name": "Favorites",
+            "description": "Favorites"
+        },
+        {
+            "name": "Listings",
+            "description": "Listings"
+        },
+        {
+            "name": "ModerationRecords",
+            "description": "ModerationRecords"
+        },
+        {
+            "name": "Notifications",
+            "description": "Notifications"
+        },
+        {
+            "name": "Properties",
+            "description": "Properties"
+        },
+        {
+            "name": "PropertyPhotos",
+            "description": "PropertyPhotos"
+        },
+        {
+            "name": "Users",
+            "description": "Users"
+        },
+        {
+            "name": "ViewingRequests",
+            "description": "ViewingRequests"
+        }
+    ]
+}
