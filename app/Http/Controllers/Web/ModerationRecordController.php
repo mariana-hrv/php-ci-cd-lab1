@@ -2,18 +2,24 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Web;
 
+use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreModerationRequest;
 use App\Models\Listing;
 use App\Models\ModerationRecord;
+use App\Services\ModerationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class ModerationRecordController extends Controller
 {
+    public function __construct(
+        private readonly ModerationService $moderationService
+    ) {}
+
     // Перегляд усіх записів модерації
     public function index(Request $request): JsonResponse|View
     {
@@ -70,55 +76,13 @@ class ModerationRecordController extends Controller
     }
 
     // Схвалення або відхилення оголошення
-    public function store(Request $request): JsonResponse|RedirectResponse
-    {
-        $this->authorize('create', ModerationRecord::class);
-
-        $validated = $request->validate([
-            'listing_id' => [
-                'required',
-                'integer',
-                'exists:listings,id',
-            ],
-            'decision' => [
-                'required',
-                'in:approved,rejected',
-            ],
-            'comment' => [
-                'nullable',
-                'string',
-                'max:1000',
-            ],
-        ]);
-
-        $listing = Listing::findOrFail(
-            $validated['listing_id']
+    public function store(
+        StoreModerationRequest $request
+    ): JsonResponse|RedirectResponse {
+        $record = $this->moderationService->moderate(
+            $request->validated(),
+            $request->user()->id
         );
-
-        $record = DB::transaction(function () use (
-            $listing,
-            $validated,
-            $request
-        ) {
-            $record = $listing->moderationRecords()->create([
-                'admin_id' => $request->user()->id,
-                'decision' => $validated['decision'],
-                'comment' => $validated['comment'] ?? null,
-            ]);
-
-            $newStatus = $validated['decision'] === 'approved'
-                ? 'published'
-                : 'draft';
-
-            $listing->update([
-                'status' => $newStatus,
-            ]);
-
-            return $record->load([
-                'listing.property',
-                'admin:id,name',
-            ]);
-        });
 
         if (! $request->expectsJson()) {
             return redirect()

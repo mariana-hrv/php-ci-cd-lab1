@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\FavoriteApiController;
-use App\Http\Controllers\Api\ListingApiController;
-use App\Http\Controllers\Api\ModerationRecordApiController;
-use App\Http\Controllers\Api\NotificationApiController;
-use App\Http\Controllers\Api\PropertyApiController;
-use App\Http\Controllers\Api\PropertyPhotoApiController;
-use App\Http\Controllers\Api\UserApiController;
-use App\Http\Controllers\Api\ViewingRequestApiController;
+use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\FavoriteApiController;
+use App\Http\Controllers\Api\V1\ListingApiController;
+use App\Http\Controllers\Api\V1\ModerationRecordApiController;
+use App\Http\Controllers\Api\V1\NotificationApiController;
+use App\Http\Controllers\Api\V1\PropertyApiController;
+use App\Http\Controllers\Api\V1\PropertyPhotoApiController;
+use App\Http\Controllers\Api\V1\UserApiController;
+use App\Http\Controllers\Api\V1\ViewingRequestApiController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {

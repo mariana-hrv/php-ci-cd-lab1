@@ -2,18 +2,23 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Web;
 
+use App\Http\Controllers\Controller;
 use App\Models\Listing;
 use App\Models\ViewingRequest;
+use App\Services\ViewingRequestService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class ViewingRequestController extends Controller
 {
+    public function __construct(
+        private readonly ViewingRequestService $viewingRequestService
+    ) {}
+
     // Отримання заявок поточного покупця
     public function index(Request $request): JsonResponse|View
     {
@@ -92,12 +97,10 @@ class ViewingRequestController extends Controller
             'comment' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $viewingRequest = $request->user()
-            ->viewingRequests()
-            ->create([
-                ...$validated,
-                'status' => 'pending',
-            ]);
+        $viewingRequest = $this->viewingRequestService->create(
+            $request->user(),
+            $validated
+        );
 
         if (! $request->expectsJson()) {
             return redirect()
@@ -163,7 +166,10 @@ class ViewingRequestController extends Controller
             'comment' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $viewingRequest->update($validated);
+        $this->viewingRequestService->update(
+            $viewingRequest,
+            $validated
+        );
 
         if (! $request->expectsJson()) {
             return redirect()
@@ -197,9 +203,7 @@ class ViewingRequestController extends Controller
             abort(409);
         }
 
-        $viewingRequest->update([
-            'status' => 'cancelled',
-        ]);
+        $this->viewingRequestService->cancel($viewingRequest);
 
         if (! $request->expectsJson()) {
             return redirect()
@@ -260,22 +264,10 @@ class ViewingRequestController extends Controller
             abort(409);
         }
 
-        DB::transaction(function () use ($viewingRequest, $validated) {
-
-            $viewingRequest->update([
-                'status' => $validated['status'],
-            ]);
-
-            $decision = $validated['status'] === 'confirmed'
-                ? 'підтверджено'
-                : 'відхилено';
-
-            $viewingRequest->buyer->propertyNotifications()->create([
-                'message' => "Вашу заявку №{$viewingRequest->id} на перегляд нерухомості {$decision} продавцем.",
-                'type' => 'viewing_request',
-                'is_read' => false,
-            ]);
-        });
+        $this->viewingRequestService->decide(
+            $viewingRequest,
+            $validated['status']
+        );
 
         if (! $request->expectsJson()) {
             return redirect()

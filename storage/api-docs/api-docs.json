@@ -18,7 +18,7 @@
                     "Authentication"
                 ],
                 "summary": "Реєстрація користувача",
-                "operationId": "5d4fa5d5607ed675ba93907e1fc94534",
+                "operationId": "e6d1fcf1feab4f92eacb72353c6dfbcd",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -100,7 +100,7 @@
                     "Authentication"
                 ],
                 "summary": "Вхід та отримання токена Sanctum",
-                "operationId": "67d6d0fdd54fba132e1b6f55ca254183",
+                "operationId": "72bf786ad8ff53c7391309c836350a8d",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -175,7 +175,7 @@
                     "Authentication"
                 ],
                 "summary": "Вихід та відкликання поточного токена",
-                "operationId": "28d48c13fca984400ac8de99f54ee13a",
+                "operationId": "5660f1ae61b95f0283dfc205d5ffdad5",
                 "responses": {
                     "200": {
                         "description": "Успішний вихід",
@@ -210,7 +210,7 @@
                 ],
                 "summary": "Отримати власні вибрані оголошення",
                 "description": "Повертає лише вибрані оголошення автентифікованого користувача.",
-                "operationId": "6c38eebf4def752b6743f00973fdd0d8",
+                "operationId": "0dad3addee6c6e155c48cada38757c94",
                 "parameters": [
                     {
                         "name": "page",
@@ -267,7 +267,7 @@
                 ],
                 "summary": "Синхронізувати вибрані оголошення",
                 "description": "Замінює власний список вибраного переданим масивом ідентифікаторів. Порожній масив очищує список.",
-                "operationId": "ddb2ca8fdf611ccaa0af7cf194f12642",
+                "operationId": "543e6cbcdb09f27742275b511fb59278",
                 "parameters": [
                     {
                         "name": "page",
@@ -355,7 +355,7 @@
                     "Listings"
                 ],
                 "summary": "Отримати список оголошень",
-                "operationId": "0e370579d7f8669103b7b2c2f91037d8",
+                "operationId": "055732bb75605e2cb71acdd0f514ec2b",
                 "parameters": [
                     {
                         "name": "page",
@@ -401,7 +401,7 @@
                 ],
                 "summary": "Створити оголошення",
                 "description": "Власником автоматично стає автентифікований користувач.",
-                "operationId": "0a7dd87f16e32981cf2b0ff3baa12ba7",
+                "operationId": "29526aa64cab034426ca3d0f59e99ef0",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -479,7 +479,7 @@
                     "Listings"
                 ],
                 "summary": "Переглянути окреме оголошення",
-                "operationId": "86bee35d7c09fc4145c50e5b558cd15a",
+                "operationId": "88f0227741759ef740dfddee205e043a",
                 "parameters": [
                     {
                         "name": "listing",
@@ -518,7 +518,7 @@
                 ],
                 "summary": "Оновити оголошення",
                 "description": "Редагувати оголошення може лише його власник.",
-                "operationId": "8b5841ea3a7a314bf2fb09a278288d1f",
+                "operationId": "6e5cc9586dce0b381168bb0baf41d29f",
                 "parameters": [
                     {
                         "name": "listing",
@@ -601,7 +601,7 @@
                 ],
                 "summary": "Видалити оголошення",
                 "description": "Видаляти оголошення може лише його власник.",
-                "operationId": "d7b6302686cd0eab833608f7fa209157",
+                "operationId": "eb0cfdac6a6edbe0044dc6969ac82e63",
                 "parameters": [
                     {
                         "name": "listing",
@@ -654,7 +654,7 @@
                 ],
                 "summary": "Отримати список записів модерації",
                 "description": "Операція доступна лише адміністратору.",
-                "operationId": "403812ad3e0bf740abdc4d3a9ba9f892",
+                "operationId": "9c1ea832a4a870397e485081465c622d",
                 "parameters": [
                     {
                         "name": "page",
@@ -711,7 +711,7 @@
                 ],
                 "summary": "Модерувати оголошення",
                 "description": "Адміністратор схвалює або відхиляє оголошення. Рішення модерації та зміна статусу оголошення зберігаються в одній транзакції.",
-                "operationId": "2792e9e82710bb927cc88887739cb695",
+                "operationId": "015396346c42459403fdd5cdf4152f4f",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -786,7 +786,7 @@
                 ],
                 "summary": "Переглянути окремий запис модерації",
                 "description": "Операція доступна лише адміністратору.",
-                "operationId": "086fcce949b9d8126d14fd850c1b08f5",
+                "operationId": "f6dca263c175e94bb4c4a8b27296eb07",
                 "parameters": [
                     {
                         "name": "moderationRecord",
@@ -838,7 +838,7 @@
                 ],
                 "summary": "Отримати власні сповіщення",
                 "description": "Повертає лише сповіщення автентифікованого користувача.",
-                "operationId": "7eca2b9e84a26784eb55b3fc6b697567",
+                "operationId": "1e473311b13a58e73ea7d5dcdf763087",
                 "parameters": [
                     {
                         "name": "page",
@@ -896,7 +896,7 @@
                     "Notifications"
                 ],
                 "summary": "Переглянути окреме сповіщення",
-                "operationId": "274216468fbc71ebeca314951fff1a75",
+                "operationId": "972458ee590d8fe37643ce6d59125ba3",
                 "parameters": [
                     {
                         "name": "notification",
@@ -945,7 +945,7 @@
                     "Notifications"
                 ],
                 "summary": "Видалити власне сповіщення",
-                "operationId": "f471e03d3f4e1b041c28fc4ce4631532",
+                "operationId": "ce2ef474ccde534c4fc3658cd880925b",
                 "parameters": [
                     {
                         "name": "notification",
@@ -998,7 +998,7 @@
                 ],
                 "summary": "Позначити сповіщення прочитаним",
                 "description": "Встановлює значення is_read у true. Операція доступна лише власнику сповіщення.",
-                "operationId": "ad429749d8ccc57ac5a12762bb9ed982",
+                "operationId": "a221b42485460d4ca2553a2662f616dd",
                 "parameters": [
                     {
                         "name": "notification",
@@ -1049,7 +1049,7 @@
                     "Properties"
                 ],
                 "summary": "Отримати список об’єктів нерухомості",
-                "operationId": "0ea299a643ebdff611244e8be55ae372",
+                "operationId": "806109f1a06999a85752c7e1f70599d3",
                 "parameters": [
                     {
                         "name": "page",
@@ -1094,7 +1094,7 @@
                     "Properties"
                 ],
                 "summary": "Створити об’єкт нерухомості",
-                "operationId": "d8c04028c8d5ea0f32f53d09ace2536a",
+                "operationId": "50d8e6d3209217eda25d013c2a7aca61",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -1180,7 +1180,7 @@
                     "Properties"
                 ],
                 "summary": "Переглянути окремий об’єкт нерухомості",
-                "operationId": "436d0699158805b06f5d6e6f7bac556b",
+                "operationId": "774f59889e74f7c4c7cfdfba8977a1c9",
                 "parameters": [
                     {
                         "name": "property",
@@ -1219,7 +1219,7 @@
                 ],
                 "summary": "Оновити об’єкт нерухомості",
                 "description": "Редагування доступне лише адміністратору.",
-                "operationId": "787e13bab9d56a6dd272b7f7f94fa83a",
+                "operationId": "64330453adc0eaa1e2ad1240f00cccef",
                 "parameters": [
                     {
                         "name": "property",
@@ -1318,7 +1318,7 @@
                 ],
                 "summary": "Видалити об’єкт нерухомості",
                 "description": "Видалення доступне адміністратору за відсутності пов’язаних оголошень і фотографій.",
-                "operationId": "ac3733a6bcfe1467ef13c0b311c181bb",
+                "operationId": "cbc9b3292dbb1bfac443a006e9d05dc5",
                 "parameters": [
                     {
                         "name": "property",
@@ -1373,7 +1373,7 @@
                     "PropertyPhotos"
                 ],
                 "summary": "Отримати фотографії об’єкта нерухомості",
-                "operationId": "bc915c7d1cc9940a546f7f877ce3d1ba",
+                "operationId": "af22aaa5edbc67744f53fa854629646c",
                 "parameters": [
                     {
                         "name": "property",
@@ -1432,7 +1432,7 @@
                     "PropertyPhotos"
                 ],
                 "summary": "Переглянути окрему фотографію",
-                "operationId": "6c8ab1f5359f09303574dd18e981f2d7",
+                "operationId": "90f5c062e9ddb15aeff00dabbe9c297b",
                 "parameters": [
                     {
                         "name": "photo",
@@ -1471,7 +1471,7 @@
                 ],
                 "summary": "Видалити фотографію нерухомості",
                 "description": "Видалення доступне продавцю, який має оголошення для відповідного об’єкта нерухомості.",
-                "operationId": "6e7a77f1c6e7ea2dff0ec0f6e532b79e",
+                "operationId": "73dcf3c11304d942eff2c3c6025c7568",
                 "parameters": [
                     {
                         "name": "photo",
@@ -1524,7 +1524,7 @@
                 ],
                 "summary": "Додати фотографію нерухомості",
                 "description": "Додавати фотографії може продавець, який має оголошення для відповідного об’єкта нерухомості.",
-                "operationId": "b1f332d8b5f3c5e514b46ac2cc441e5b",
+                "operationId": "b7e5f397e33ecfc8342b6bc990c42d11",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -1595,7 +1595,7 @@
                 ],
                 "summary": "Отримати список користувачів",
                 "description": "Операція доступна лише адміністратору.",
-                "operationId": "15a1555d1d1308580ebe100b63a494eb",
+                "operationId": "39dd859c0ad129b32a03b0ff535ceb2c",
                 "parameters": [
                     {
                         "name": "page",
@@ -1654,7 +1654,7 @@
                 ],
                 "summary": "Переглянути окремого користувача",
                 "description": "Операція доступна лише адміністратору.",
-                "operationId": "d7a131f3db2ba7a74c3d56b5df7013fc",
+                "operationId": "768ec3a95f4f0e1701a63960bf90ba96",
                 "parameters": [
                     {
                         "name": "user",
@@ -1705,7 +1705,7 @@
                     "Users"
                 ],
                 "summary": "Переглянути власний профіль",
-                "operationId": "db83b3dec9daaef7a1a92d7e6d9eca5a",
+                "operationId": "105c8def175b7b988300214d2759a6fd",
                 "responses": {
                     "200": {
                         "description": "Дані автентифікованого користувача",
@@ -1741,7 +1741,7 @@
                 ],
                 "summary": "Оновити власний профіль",
                 "description": "Користувач може змінювати власне ім’я та електронну пошту. Зміна ролі не передбачена.",
-                "operationId": "78bb8da06707e9d8cce322df5a8ad2cb",
+                "operationId": "52d6cf79e909923108928e42fb0b537a",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -1807,7 +1807,7 @@
                 ],
                 "summary": "Видалити власний обліковий запис",
                 "description": "Потребує підтвердження поточного пароля. Видалення адміністратора та користувача з пов’язаними даними заборонено.",
-                "operationId": "2d24af2dfc2cf0d6607453d091b8f1ea",
+                "operationId": "c617a255617365f4cf5fe94ee48feb96",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -1871,7 +1871,7 @@
                     "ViewingRequests"
                 ],
                 "summary": "Отримати власні заявки на перегляд",
-                "operationId": "8b36c5042c30b9b399e28c934c4e1da4",
+                "operationId": "3b7edac3107b6ce337793b6c7fc22c8c",
                 "parameters": [
                     {
                         "name": "page",
@@ -1928,7 +1928,7 @@
                 ],
                 "summary": "Створити заявку на перегляд нерухомості",
                 "description": "Покупець визначається за токеном Sanctum. Початковий статус заявки — pending.",
-                "operationId": "dd6db65a6bf00b6814d1890d9a8b896f",
+                "operationId": "4b6ca7a57b4083d5434dfc1c38fa69d4",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -2006,7 +2006,7 @@
                     "ViewingRequests"
                 ],
                 "summary": "Переглянути власну заявку",
-                "operationId": "47888f0fc8c491f37d38f6867cf147aa",
+                "operationId": "b8e947140a59ae2fa89298a592248103",
                 "parameters": [
                     {
                         "name": "viewingRequest",
@@ -2056,7 +2056,7 @@
                 ],
                 "summary": "Оновити власну заявку",
                 "description": "Редагування дозволено лише власнику заявки зі статусом pending.",
-                "operationId": "edadccf06bbbbba9fbc972256ed1a396",
+                "operationId": "bfcb934059d78af19c6b6e12e22a3e75",
                 "parameters": [
                     {
                         "name": "viewingRequest",
@@ -2141,7 +2141,7 @@
                 ],
                 "summary": "Скасувати власну заявку",
                 "description": "Змінює статус заявки з pending на cancelled без фізичного видалення запису.",
-                "operationId": "37e066d23c7d674d8714b8281fe4cfc5",
+                "operationId": "84890e74f51384f9a7c8186fbfc15e14",
                 "parameters": [
                     {
                         "name": "viewingRequest",
@@ -2197,7 +2197,7 @@
                 ],
                 "summary": "Отримати вхідні заявки продавця",
                 "description": "Повертає заявки на оголошення автентифікованого продавця.",
-                "operationId": "4883329ee9cc8b09814e464bca757757",
+                "operationId": "2e4377a827342649594698a14e8b362d",
                 "parameters": [
                     {
                         "name": "page",
@@ -2256,7 +2256,7 @@
                 ],
                 "summary": "Підтвердити або відхилити заявку",
                 "description": "Операція доступна продавцю відповідного оголошення для заявки зі статусом pending. Покупцеві автоматично створюється сповіщення.",
-                "operationId": "658df61502f6fcfe4a4f0376358be1ae",
+                "operationId": "752589636b9f41095a709efef27272f3",
                 "parameters": [
                     {
                         "name": "viewingRequest",
