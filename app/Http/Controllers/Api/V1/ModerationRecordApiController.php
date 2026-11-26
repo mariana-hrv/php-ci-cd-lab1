@@ -2,20 +2,23 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreModerationRequest;
 use App\Http\Resources\ModerationRecordResource;
-use App\Models\Listing;
 use App\Models\ModerationRecord;
+use App\Services\ModerationService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Support\Facades\DB;
 use OpenApi\Attributes as OA;
 
 class ModerationRecordApiController extends Controller
 {
+    public function __construct(
+        private readonly ModerationService $moderationService
+    ) {}
+
     #[OA\Get(
         path: '/moderation-records',
         summary: 'Отримати список записів модерації',
@@ -161,53 +164,13 @@ class ModerationRecordApiController extends Controller
             new OA\Response(response: 422, description: 'Помилка валідації'),
         ]
     )]
-    public function store(Request $request): JsonResponse
-    {
-        $this->authorize('create', ModerationRecord::class);
-
-        $validated = $request->validate([
-            'listing_id' => [
-                'required',
-                'integer',
-                'exists:listings,id',
-            ],
-            'decision' => [
-                'required',
-                'in:approved,rejected',
-            ],
-            'comment' => [
-                'nullable',
-                'string',
-                'max:1000',
-            ],
-        ]);
-
-        $listing = Listing::findOrFail(
-            $validated['listing_id']
+    public function store(
+        StoreModerationRequest $request
+    ): JsonResponse {
+        $record = $this->moderationService->moderate(
+            $request->validated(),
+            $request->user()->id
         );
-
-        $record = DB::transaction(function () use (
-            $listing,
-            $validated,
-            $request
-        ) {
-            $record = $listing->moderationRecords()->create([
-                'admin_id' => $request->user()->id,
-                'decision' => $validated['decision'],
-                'comment' => $validated['comment'] ?? null,
-            ]);
-
-            $listing->update([
-                'status' => $validated['decision'] === 'approved'
-                    ? 'published'
-                    : 'draft',
-            ]);
-
-            return $record->load([
-                'listing.property',
-                'admin:id,name',
-            ]);
-        });
 
         return (new ModerationRecordResource($record))
             ->response()

@@ -2,19 +2,23 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ViewingRequestResource;
 use App\Models\ViewingRequest;
+use App\Services\ViewingRequestService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Support\Facades\DB;
 use OpenApi\Attributes as OA;
 
 class ViewingRequestApiController extends Controller
 {
+    public function __construct(
+        private readonly ViewingRequestService $viewingRequestService
+    ) {}
+
     #[OA\Get(
         path: '/viewing-requests',
         summary: 'Отримати власні заявки на перегляд',
@@ -187,12 +191,10 @@ class ViewingRequestApiController extends Controller
             'comment' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $viewingRequest = $request->user()
-            ->viewingRequests()
-            ->create([
-                ...$validated,
-                'status' => 'pending',
-            ]);
+        $viewingRequest = $this->viewingRequestService->create(
+            $request->user(),
+            $validated
+        );
 
         $viewingRequest->load([
             'listing.property',
@@ -293,7 +295,10 @@ class ViewingRequestApiController extends Controller
             'comment' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $viewingRequest->update($validated);
+        $this->viewingRequestService->update(
+            $viewingRequest,
+            $validated
+        );
 
         $viewingRequest->load([
             'listing.property',
@@ -348,9 +353,7 @@ class ViewingRequestApiController extends Controller
             'Можна скасувати лише заявки зі статусом pending.'
         );
 
-        $viewingRequest->update([
-            'status' => 'cancelled',
-        ]);
+        $this->viewingRequestService->cancel($viewingRequest);
 
         return response()->json([
             'message' => 'Заявку успішно скасовано.',
@@ -474,21 +477,10 @@ class ViewingRequestApiController extends Controller
             'status' => ['required', 'in:confirmed,rejected'],
         ]);
 
-        DB::transaction(function () use ($viewingRequest, $validated) {
-            $viewingRequest->update([
-                'status' => $validated['status'],
-            ]);
-
-            $decision = $validated['status'] === 'confirmed'
-                ? 'підтверджено'
-                : 'відхилено';
-
-            $viewingRequest->buyer->propertyNotifications()->create([
-                'message' => "Вашу заявку №{$viewingRequest->id} на перегляд нерухомості {$decision} продавцем.",
-                'type' => 'viewing_request',
-                'is_read' => false,
-            ]);
-        });
+        $this->viewingRequestService->decide(
+            $viewingRequest,
+            $validated['status']
+        );
 
         $viewingRequest->load([
             'buyer:id,name',

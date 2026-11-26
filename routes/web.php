@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\FavoriteListingController;
-use App\Http\Controllers\ListingController;
-use App\Http\Controllers\ModerationRecordController;
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\PropertyController;
-use App\Http\Controllers\PropertyPhotoController;
-use App\Http\Controllers\PropertySearchController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\ViewingRequestController;
+use App\Http\Controllers\Web\AuthController;
+use App\Http\Controllers\Web\FavoriteListingController;
+use App\Http\Controllers\Web\ListingController;
+use App\Http\Controllers\Web\ModerationRecordController;
+use App\Http\Controllers\Web\NotificationController;
+use App\Http\Controllers\Web\PropertyController;
+use App\Http\Controllers\Web\PropertyPhotoController;
+use App\Http\Controllers\Web\PropertySearchController;
+use App\Http\Controllers\Web\UserController;
+use App\Http\Controllers\Web\ViewingRequestController;
 use Illuminate\Support\Facades\Route;
 
 // Головна сторінка Laravel

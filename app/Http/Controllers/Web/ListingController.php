@@ -2,18 +2,25 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Web;
 
+use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreListingRequest;
+use App\Http\Requests\UpdateListingRequest;
 use App\Models\Listing;
 use App\Models\Property;
+use App\Services\ListingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ListingController extends Controller
 {
+    public function __construct(
+        private readonly ListingService $listingService
+    ) {}
+
     // Отримання всіх оголошень
     public function index(Request $request): JsonResponse|View
     {
@@ -66,20 +73,12 @@ class ListingController extends Controller
     }
 
     // Створення оголошення
-    public function store(Request $request): JsonResponse|RedirectResponse
+    public function store(StoreListingRequest $request): JsonResponse|RedirectResponse
     {
-        $this->authorize('create', Listing::class);
-        $validated = $request->validate([
-            'property_id' => ['required', 'integer', 'exists:properties,id'],
-            'price' => ['required', 'numeric', 'gt:0'],
-            'description' => ['nullable', 'string'],
-            'status' => ['sometimes', Rule::in(['draft', 'published', 'archived'])],
-        ]);
-
-        $listing = Listing::create([
-            ...$validated,
-            'seller_id' => $request->user()->id,
-        ]);
+        $listing = $this->listingService->create(
+            $request->validated(),
+            $request->user()->id
+        );
 
         if (! $request->expectsJson()) {
             return redirect()
@@ -107,19 +106,14 @@ class ListingController extends Controller
     }
 
     // Оновлення оголошення
-    public function update(Request $request, string $id): JsonResponse|RedirectResponse
+    public function update(UpdateListingRequest $request, string $id): JsonResponse|RedirectResponse
     {
         $listing = Listing::findOrFail((int) $id);
 
-        $this->authorize('update', $listing);
-
-        $validated = $request->validate([
-            'price' => ['sometimes', 'required', 'numeric', 'gt:0'],
-            'description' => ['nullable', 'string'],
-            'status' => ['sometimes', Rule::in(['draft', 'published', 'archived'])],
-        ]);
-
-        $listing->update($validated);
+        $listing = $this->listingService->update(
+            $listing,
+            $request->validated()
+        );
 
         if (! $request->expectsJson()) {
             return redirect()
@@ -142,7 +136,7 @@ class ListingController extends Controller
 
         $this->authorize('delete', $listing);
 
-        $listing->delete();
+        $this->listingService->delete($listing);
 
         if (! $request->expectsJson()) {
             return redirect()

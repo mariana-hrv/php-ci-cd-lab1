@@ -2,19 +2,24 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreListingRequest;
+use App\Http\Requests\UpdateListingRequest;
 use App\Http\Resources\ListingResource;
 use App\Models\Listing;
+use App\Services\ListingService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
 
 class ListingApiController extends Controller
 {
+    public function __construct(
+        private readonly ListingService $listingService
+    ) {}
+
     #[OA\Get(
         path: '/listings',
         summary: 'Отримати список оголошень',
@@ -152,26 +157,13 @@ class ListingApiController extends Controller
             new OA\Response(response: 422, description: 'Помилка валідації'),
         ]
     )]
-    public function store(Request $request): JsonResponse
+    public function store(StoreListingRequest $request): JsonResponse
     {
-        $this->authorize('create', Listing::class);
+        $listing = $this->listingService->create(
+            $request->validated(),
+            $request->user()->id
+        );
 
-        $validated = $request->validate([
-            'property_id' => ['required', 'integer', 'exists:properties,id'],
-            'price' => ['required', 'numeric', 'gt:0'],
-            'description' => ['nullable', 'string'],
-            'status' => ['sometimes', Rule::in([
-                'draft',
-                'published',
-                'archived',
-            ])],
-        ]);
-
-        $validated['seller_id'] = $request->user()->id;
-
-        $listing = Listing::create($validated);
-
-        $listing->refresh();
         $listing->load(['property', 'seller:id,name']);
 
         return (new ListingResource($listing))
@@ -238,22 +230,13 @@ class ListingApiController extends Controller
         ]
     )]
     public function update(
-        Request $request,
+        UpdateListingRequest $request,
         Listing $listing
     ): ListingResource {
-        $this->authorize('update', $listing);
-
-        $validated = $request->validate([
-            'price' => ['sometimes', 'required', 'numeric', 'gt:0'],
-            'description' => ['nullable', 'string'],
-            'status' => ['sometimes', Rule::in([
-                'draft',
-                'published',
-                'archived',
-            ])],
-        ]);
-
-        $listing->update($validated);
+        $listing = $this->listingService->update(
+            $listing,
+            $request->validated()
+        );
 
         $listing->load(['property', 'seller:id,name']);
 
@@ -298,7 +281,7 @@ class ListingApiController extends Controller
     {
         $this->authorize('delete', $listing);
 
-        $listing->delete();
+        $this->listingService->delete($listing);
 
         return response()->json([
             'message' => 'Оголошення успішно видалено.',
