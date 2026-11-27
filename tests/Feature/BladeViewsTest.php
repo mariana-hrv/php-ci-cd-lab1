@@ -48,6 +48,7 @@ class BladeViewsTest extends TestCase
         Listing::factory()->create([
             'property_id' => $property->id,
             'seller_id' => $seller->id,
+            'status' => 'published',
         ]);
 
         $this->get(route('listings.index'))

@@ -30,24 +30,43 @@ class DatabaseSeeder extends Seeder
         $admin->save();
 
         // 2. Створення об'єктів нерухомості
-        $properties = Property::factory()
-            ->count(5)
-            ->create();
+        $demoProperties = [
+            ['apartment', 'apartment-1.jpg', 'apartment-2.jpg'],
+            ['commercial', 'office-1.jpg', 'office-2.jpg'],
+            ['commercial', 'shop-1.jpg', 'shop-2.jpg'],
+            ['commercial', 'warehouse-1.jpg', 'warehouse-2.jpg'],
+            ['house', 'house-1.jpg', 'house-2.jpg'],
+            ['apartment', 'apartment-3.jpg', null],
+        ];
+
+        $properties = collect();
+
+        foreach ($demoProperties as $demo) {
+            $properties->push(
+                Property::factory()->create([
+                    'property_type' => $demo[0],
+                ])
+            );
+        }
 
         $listings = collect();
 
-        foreach ($properties as $property) {
+        foreach ($properties as $index => $property) {
 
-            // 3. Фотографії нерухомості
+            // 3. Демонстраційні фотографії нерухомості
             PropertyPhoto::factory()->create([
                 'property_id' => $property->id,
+                'file_path' => 'images/properties/'.$demoProperties[$index][1],
                 'is_primary' => true,
             ]);
 
-            PropertyPhoto::factory()->create([
-                'property_id' => $property->id,
-                'is_primary' => false,
-            ]);
+            if ($demoProperties[$index][2] !== null) {
+                PropertyPhoto::factory()->create([
+                    'property_id' => $property->id,
+                    'file_path' => 'images/properties/'.$demoProperties[$index][2],
+                    'is_primary' => false,
+                ]);
+            }
 
             // 4. Оголошення для кожного об'єкта
             $createdListings = Listing::factory()

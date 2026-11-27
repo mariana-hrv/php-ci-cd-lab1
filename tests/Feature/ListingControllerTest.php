@@ -17,7 +17,9 @@ class ListingControllerTest extends TestCase
     // Перегляд оголошень із пов'язаними даними
     public function test_can_view_listings_with_relations(): void
     {
-        $listing = Listing::factory()->create();
+        $listing = Listing::factory()->create([
+            'status' => 'published',
+        ]);
 
         $response = $this->getJson('/listings');
 

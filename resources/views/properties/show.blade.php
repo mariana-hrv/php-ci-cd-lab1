@@ -94,85 +94,97 @@
 
     <div class="card-body">
 
-        @forelse ($property->photos as $photo)
-        <div class="border-bottom pb-2 mb-2">
+        <div class="row g-3">
+            @forelse ($property->photos as $photo)
+            <div class="col-12 col-md-6">
+                <div class="card h-100 shadow-sm overflow-hidden">
 
-            <p class="mb-1">
-                Фотографія №{{ $photo->id }}
+                    @if (is_file(public_path('images/properties/' . basename($photo->file_path))))
+                    <img src="{{ asset('images/properties/' . basename($photo->file_path)) }}"
+                        alt="Фотографія нерухомості"
+                        class="card-img-top"
+                        style="height: 320px; object-fit: cover;">
+                    @else
+                    <div class="bg-light text-muted d-flex align-items-center justify-content-center"
+                        style="height: 320px;">
+                        Фотографія недоступна
+                    </div>
+                    @endif
+
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <span class="text-muted">
+                            Фотографія №{{ $photo->id }}
+                        </span>
+
+                        @if ($photo->is_primary)
+                        <span class="badge bg-success">
+                            Основна фотографія
+                        </span>
+                        @endif
+                    </div>
+
+                </div>
+            </div>
+            @empty
+            <p class="text-muted mb-0">
+                Фотографій немає.
             </p>
+            @endforelse
+        </div>
+    </div>
 
-            <p class="text-muted mb-1">
-                {{ $photo->file_path }}
-            </p>
+    @can('update', $property)
 
-            @if ($photo->is_primary)
-            <span class="badge bg-success">
-                Основна фотографія
-            </span>
+    <div class="card shadow-sm mt-4">
+
+        <div class="card-header fw-bold">
+            Керування нерухомістю
+        </div>
+
+        <div class="card-body">
+
+            <div class="d-flex gap-2">
+
+                <a href="{{ route('properties.edit', $property->id) }}"
+                    class="btn btn-warning">
+                    Редагувати нерухомість
+                </a>
+                @can('delete', $property)
+
+                @if ($property->listings->isEmpty() && $property->photos->isEmpty())
+
+                <form action="{{ route('properties.destroy', $property->id) }}"
+                    method="POST"
+                    onsubmit="return confirm('Ви дійсно бажаєте видалити об’єкт нерухомості?');">
+
+                    @csrf
+                    @method('DELETE')
+
+                    <button type="submit" class="btn btn-danger">
+                        Видалити нерухомість
+                    </button>
+
+                </form>
+
+                @endif
+                @endcan
+
+            </div>
+
+            @if ($property->listings->isNotEmpty() || $property->photos->isNotEmpty())
+
+            <div class="alert alert-warning mt-3 mb-0">
+                Неможливо видалити об'єкт нерухомості,
+                оскільки він має пов'язані оголошення
+                або фотографії.
+            </div>
+
             @endif
 
         </div>
-        @empty
-        <p class="text-muted mb-0">
-            Фотографій немає.
-        </p>
-        @endforelse
-
-    </div>
-</div>
-
-@can('update', $property)
-
-<div class="card shadow-sm mt-4">
-
-    <div class="card-header fw-bold">
-        Керування нерухомістю
-    </div>
-
-    <div class="card-body">
-
-        <div class="d-flex gap-2">
-
-            <a href="{{ route('properties.edit', $property->id) }}"
-                class="btn btn-warning">
-                Редагувати нерухомість
-            </a>
-            @can('delete', $property)
-
-            @if ($property->listings->isEmpty() && $property->photos->isEmpty())
-
-            <form action="{{ route('properties.destroy', $property->id) }}"
-                method="POST"
-                onsubmit="return confirm('Ви дійсно бажаєте видалити об’єкт нерухомості?');">
-
-                @csrf
-                @method('DELETE')
-
-                <button type="submit" class="btn btn-danger">
-                    Видалити нерухомість
-                </button>
-
-            </form>
-
-            @endif
-            @endcan
-
-        </div>
-
-        @if ($property->listings->isNotEmpty() || $property->photos->isNotEmpty())
-
-        <div class="alert alert-warning mt-3 mb-0">
-            Неможливо видалити об'єкт нерухомості,
-            оскільки він має пов'язані оголошення
-            або фотографії.
-        </div>
-
-        @endif
 
     </div>
 
-</div>
+    @endcan
 
-@endcan
-
-@endsection
+    @endsection

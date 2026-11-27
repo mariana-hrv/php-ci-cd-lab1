@@ -26,6 +26,7 @@ class ListingController extends Controller
     {
         $this->authorize('viewAny', Listing::class);
         $query = Listing::query()
+            ->visibleTo($request->user())
             ->with(['property', 'seller:id,name']);
 
         if ($request->expectsJson()) {
@@ -38,6 +39,7 @@ class ListingController extends Controller
         }
 
         $listings = $query
+            ->with('property.photos')
             ->orderBy('id', 'desc')
             ->paginate(10);
 
