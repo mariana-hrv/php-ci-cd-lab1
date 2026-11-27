@@ -5,134 +5,146 @@
 @section('content')
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-
     <h1 class="mb-0">Оголошення нерухомості</h1>
 
     @auth
-    <a href="{{ route('listings.create') }}"
-        class="btn btn-success">
+    <a href="{{ route('listings.create') }}" class="btn btn-success">
         + Створити оголошення
     </a>
     @endauth
-
 </div>
 
-<div class="table-responsive">
-    <table class="table table-bordered table-striped table-hover align-middle">
+<div class="row g-4 mb-4">
 
-        <thead class="table-dark">
-            <tr>
-                <th>ID</th>
-                <th>Тип нерухомості</th>
-                <th>Місто</th>
-                <th>Адреса</th>
-                <th>Продавець</th>
-                <th>Ціна, грн</th>
-                <th>Статус</th>
-                <th>Дії</th>
-            </tr>
-        </thead>
+    @forelse ($listings as $listing)
 
-        <tbody>
-            @forelse ($listings as $listing)
-            <tr>
-                <td>{{ $listing->id }}</td>
+    @php
+    $photo = $listing->property?->photos->firstWhere('is_primary', true)
+    ?? $listing->property?->photos->first();
 
-                <td>{{ $listing->property->property_type ?? '—' }}</td>
+    $photoPath = $photo
+    ? 'images/properties/' . basename($photo->file_path)
+    : null;
 
-                <td>{{ $listing->property->city ?? '—' }}</td>
+    $type = match ($listing->property?->property_type) {
+    'apartment' => 'Квартира',
+    'house' => 'Будинок',
+    'land' => 'Земельна ділянка',
+    default => $listing->property?->property_type ?? 'Нерухомість',
+    };
 
-                <td>{{ $listing->property->address ?? '—' }}</td>
+    [$statusText, $statusColor] = match ($listing->status) {
+    'published' => ['Опубліковано', 'success'],
+    'draft' => ['Чернетка', 'secondary'],
+    'sold' => ['Продано', 'primary'],
+    'archived' => ['Архівовано', 'dark'],
+    'rejected' => ['Відхилено', 'danger'],
+    default => [$listing->status, 'warning'],
+    };
+    @endphp
 
-                <td>{{ $listing->seller->name ?? '—' }}</td>
+    <div class="col-12 col-md-6 col-xl-4">
+        <div class="card h-100 shadow-sm overflow-hidden">
 
-                <td>
-                    {{ number_format($listing->price, 2, '.', ' ') }}
-                </td>
+            @if ($photoPath && is_file(public_path($photoPath)))
+            <img src="{{ asset($photoPath) }}"
+                class="card-img-top"
+                alt="{{ $type }}"
+                style="height: 230px; object-fit: cover;">
+            @else
+            <div class="bg-light text-muted d-flex align-items-center justify-content-center"
+                style="height: 230px;">
+                Фотографія недоступна
+            </div>
+            @endif
 
-                <td>
-                    @switch($listing->status)
-                    @case('published')
-                    <span class="badge bg-success">
-                        Опубліковано
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <small class="text-muted">
+                        №{{ $listing->id }}
+                    </small>
+
+                    <span class="badge bg-{{ $statusColor }}">
+                        {{ $statusText }}
                     </span>
-                    @break
+                </div>
 
-                    @case('draft')
-                    <span class="badge bg-secondary">
-                        Чернетка
+                <h4 class="fw-bold text-primary mb-2">
+                    {{ number_format($listing->price, 2, '.', ' ') }} грн
+                </h4>
+
+                <h5 class="card-title">{{ $type }}</h5>
+
+                <p class="mb-1">
+                    {{ $listing->property->city ?? '—' }}
+                </p>
+
+                <p class="text-muted mb-3">
+                    {{ $listing->property->address ?? '—' }}
+                </p>
+
+                <div class="d-flex gap-3 mb-3">
+                    <span>
+                        {{ $listing->property->area ?? '—' }} м²
                     </span>
-                    @break
 
-                    @case('sold')
-                    <span class="badge bg-primary">
-                        Продано
+                    <span>
+                        Кімнат: {{ $listing->property->rooms ?? '—' }}
                     </span>
-                    @break
+                </div>
 
-                    @case('archived')
-                    <span class="badge bg-dark">
-                        Архівовано
-                    </span>
-                    @break
+                <small class="text-muted">
+                    Продавець: {{ $listing->seller->name ?? '—' }}
+                </small>
 
-                    @case('rejected')
-                    <span class="badge bg-danger">
-                        Відхилено
-                    </span>
-                    @break
+            </div>
 
-                    @default
-                    <span class="badge bg-warning text-dark">
-                        {{ $listing->status }}
-                    </span>
-                    @endswitch
-                </td>
+            <div class="card-footer bg-white border-top-0">
 
+                <a href="{{ route('listings.show', $listing->id) }}"
+                    class="btn btn-outline-primary w-100 mb-2">
+                    Переглянути оголошення
+                </a>
 
-                <td>
-                    <div class="d-flex flex-wrap gap-1">
+                <div class="d-flex flex-wrap gap-2">
 
-                        <a href="{{ route('listings.show', $listing->id) }}"
-                            class="btn btn-sm btn-info">
-                            Перегляд
-                        </a>
+                    @can('update', $listing)
+                    <a href="{{ route('listings.edit', $listing->id) }}"
+                        class="btn btn-sm btn-outline-warning">
+                        Редагувати
+                    </a>
+                    @endcan
 
-                        @can('update', $listing)
-                        <a href="{{ route('listings.edit', $listing->id) }}"
-                            class="btn btn-sm btn-warning">
-                            Редаг.
-                        </a>
-                        @endcan
+                    @can('delete', $listing)
+                    <form action="{{ route('listings.destroy', $listing->id) }}"
+                        method="POST"
+                        onsubmit="return confirm('Ви дійсно бажаєте видалити оголошення?');">
 
-                        @can('delete', $listing)
-                        <form action="{{ route('listings.destroy', $listing->id) }}"
-                            method="POST"
-                            onsubmit="return confirm('Ви дійсно бажаєте видалити оголошення?');">
+                        @csrf
+                        @method('DELETE')
 
-                            @csrf
-                            @method('DELETE')
+                        <button type="submit"
+                            class="btn btn-sm btn-outline-danger">
+                            Видалити
+                        </button>
+                    </form>
+                    @endcan
 
-                            <button type="submit" class="btn btn-sm btn-danger">
-                                Видалити
-                            </button>
-                        </form>
-                        @endcan
+                </div>
 
-                    </div>
-                </td>
+            </div>
+        </div>
+    </div>
 
-            </tr>
-            @empty
-            <tr>
-                <td colspan="8" class="text-center text-muted">
-                    Оголошень не знайдено.
-                </td>
-            </tr>
-            @endforelse
-        </tbody>
+    @empty
+    <div class="col-12">
+        <div class="alert alert-light text-center">
+            Оголошень не знайдено.
+        </div>
+    </div>
+    @endforelse
 
-    </table>
 </div>
 
 {{ $listings->links('pagination::bootstrap-5') }}

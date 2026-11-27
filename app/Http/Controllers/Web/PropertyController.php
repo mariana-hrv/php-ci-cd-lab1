@@ -18,7 +18,10 @@ class PropertyController extends Controller
     {
         $this->authorize('viewAny', Property::class);
         $query = Property::query()
-            ->with(['listings', 'photos']);
+            ->with([
+                'listings' => fn ($query) => $query->visibleTo(request()->user()),
+                'photos',
+            ]);
 
         if ($request->expectsJson()) {
             $properties = $query->get();
@@ -71,7 +74,10 @@ class PropertyController extends Controller
                 ->with('success', 'Об’єкт нерухомості успішно створено!');
         }
 
-        $property->load(['listings', 'photos']);
+        $property->load([
+            'listings' => fn ($query) => $query->visibleTo(request()->user()),
+            'photos',
+        ]);
 
         return response()->json([
             'status' => 'created',
@@ -83,7 +89,10 @@ class PropertyController extends Controller
     public function show(Request $request, string $id): JsonResponse|View
     {
         $property = Property::query()
-            ->with(['listings', 'photos'])
+            ->with([
+                'listings' => fn ($query) => $query->visibleTo(request()->user()),
+                'photos',
+            ])
             ->find((int) $id);
 
         if ($property === null) {

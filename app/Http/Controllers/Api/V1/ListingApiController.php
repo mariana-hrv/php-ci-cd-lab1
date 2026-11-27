@@ -11,7 +11,9 @@ use App\Http\Resources\ListingResource;
 use App\Models\Listing;
 use App\Services\ListingService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Gate;
 use OpenApi\Attributes as OA;
 
 class ListingApiController extends Controller
@@ -53,11 +55,14 @@ class ListingApiController extends Controller
             ),
         ]
     )]
-    public function index(): AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection
     {
-        $this->authorize('viewAny', Listing::class);
+        $user = $request->user('sanctum');
+
+        Gate::forUser($user)->authorize('viewAny', Listing::class);
 
         $listings = Listing::query()
+            ->visibleTo($user)
             ->with(['property', 'seller:id,name'])
             ->orderByDesc('id')
             ->paginate(10);
@@ -94,9 +99,11 @@ class ListingApiController extends Controller
             new OA\Response(response: 404, description: 'Оголошення не знайдено'),
         ]
     )]
-    public function show(Listing $listing): ListingResource
+    public function show(Request $request, Listing $listing): ListingResource
     {
-        $this->authorize('view', $listing);
+        $user = $request->user('sanctum');
+
+        Gate::forUser($user)->authorize('view', $listing);
 
         $listing->load(['property', 'seller:id,name']);
 

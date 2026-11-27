@@ -88,6 +88,7 @@ class PropertySearchTest extends TestCase
 
         $listing = Listing::factory()->create([
             'property_id' => $property->id,
+            'status' => 'published',
         ]);
 
         $photo = PropertyPhoto::factory()->create([

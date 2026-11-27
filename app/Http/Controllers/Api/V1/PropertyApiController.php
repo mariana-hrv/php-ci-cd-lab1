@@ -52,7 +52,10 @@ class PropertyApiController extends Controller
         $this->authorize('viewAny', Property::class);
 
         $properties = Property::query()
-            ->with(['listings', 'photos'])
+            ->with([
+                'listings' => fn ($query) => $query->visibleTo(request()->user('sanctum')),
+                'photos',
+            ])
             ->orderByDesc('id')
             ->paginate(10);
 
@@ -92,7 +95,10 @@ class PropertyApiController extends Controller
     {
         $this->authorize('view', $property);
 
-        $property->load(['listings', 'photos']);
+        $property->load([
+            'listings' => fn ($query) => $query->visibleTo(request()->user('sanctum')),
+            'photos',
+        ]);
 
         return new PropertyResource($property);
     }
@@ -174,7 +180,10 @@ class PropertyApiController extends Controller
 
         $property = Property::create($validated);
 
-        $property->load(['listings', 'photos']);
+        $property->load([
+            'listings' => fn ($query) => $query->visibleTo(request()->user('sanctum')),
+            'photos',
+        ]);
 
         return (new PropertyResource($property))
             ->response()
@@ -271,7 +280,10 @@ class PropertyApiController extends Controller
 
         $property->update($validated);
 
-        $property->load(['listings', 'photos']);
+        $property->load([
+            'listings' => fn ($query) => $query->visibleTo(request()->user('sanctum')),
+            'photos',
+        ]);
 
         return new PropertyResource($property);
     }

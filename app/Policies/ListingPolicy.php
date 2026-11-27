@@ -16,7 +16,9 @@ class ListingPolicy
 
     public function view(?User $user, Listing $listing): bool
     {
-        return true;
+        return $listing->status === 'published'
+            || $user?->isAdmin() === true
+            || ($user !== null && $user->id === $listing->seller_id);
     }
 
     public function create(User $user): bool

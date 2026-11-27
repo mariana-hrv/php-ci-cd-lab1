@@ -21,9 +21,12 @@ class PropertySearchController extends Controller
             'rooms' => ['nullable', 'integer', 'min:1'],
         ]);
 
-        // Формування запиту до бази даних
+        // Формування запиту до бази данихє
         $query = Property::query()
-            ->with(['listings', 'photos']);
+            ->with([
+                'listings' => fn ($query) => $query->visibleTo(request()->user()),
+                'photos',
+            ]);
 
         // Фільтрація за містом
         if (! empty($filters['city'])) {
